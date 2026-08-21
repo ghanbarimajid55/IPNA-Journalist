@@ -1,0 +1,28 @@
+# Environment / secrets
+.env
+.env.*
+!.env.example
+
+# Application configuration - production secrets
+config/database.php
+config/config.php
+
+# Runtime / logs
+storage/logs/*
+storage/cache/*
+storage/sessions/*
+storage/framework/*
+storage/*.log
+
+# Archives / temporary files
+*.zip
+*.tar
+*.tar.gz
+
+# OS / editor files
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.swp
+*.swo

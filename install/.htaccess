@@ -1,0 +1,6 @@
+# Install completed - restrict access
+Deny from all
+<FilesMatch "^(index|process)\.php$">
+    # Allow re-install if .installed is removed
+    # Remove this file to re-enable installer
+</FilesMatch>
