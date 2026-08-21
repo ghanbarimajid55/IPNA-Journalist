@@ -11,18 +11,17 @@
             <div class="col-md-6">
                 <h6>فرمت فایل CSV:</h6>
                 <div class="bg-light p-3 rounded font-monospace small" dir="ltr" style="overflow-x: auto;">
-                    <code>user_id,type_code,date,quantity,title,link,is_mission,description</code><br>
-                    <code>1,news,1403/05/15,2,خبر آزمایشی,https://...,0,</code><br>
-                    <code>2,photo,1403/05/15,5,عکس خبری,https://...,1,توضیح</code>
+                    <code>Name,Date,Position,Mission,Link,Description,News,Exclusive News,Interview,Special Report,Photo,Gallery,Video</code><br>
+                    <code>شخص تست,2026-08-20,خبرنگار,1,https://...,توضیح,2,0,0,0,0,0,0</code>
                 </div>
             </div>
             <div class="col-md-6">
                 <h6>نکات مهم:</h6>
                 <ul class="small text-muted mb-0">
                     <li>فایل باید با UTF-8 ذخیره شده باشد</li>
-                    <li>ستون اول باید شامل کد کاربر باشد</li>
-                    <li><code>type_code</code> باید با کد نوع فعالیت موجود مطابقت داشته باشد</li>
-                    <li>تاریخ باید به فرمت جلالی باشد (۱۴۰۳/۰۵/۱۵)</li>
+                    <li>ردیف اول باید شامل نام ستون‌ها باشد (مانند نمونه بالا)</li>
+                    <li>ستون <code>Name</code> برای یافتن/ایجاد کاربر استفاده می‌شود</li>
+                    <li>تاریخ به فرمت میلادی <code>YYYY-MM-DD</code> یا جلالی <code>YYYY/MM/DD</code></li>
                     <li>تعداد و امتیاز به صورت خودکار محاسبه می‌شوند</li>
                 </ul>
             </div>
@@ -32,7 +31,7 @@
 
 <div class="card mb-4">
     <div class="card-body">
-        <form method="POST" action="<?= url('admin/import/upload') ?>" enctype="multipart/form-data" id="uploadForm">
+        <form method="POST" action="<?= url('admin/import/process') ?>" enctype="multipart/form-data" id="uploadForm">
             <input type="hidden" name="csrf_token" value="<?= csrf_token() ?>">
 
             <div class="upload-area border border-2 border-dashed rounded-3 p-5 text-center" id="dropZone"
@@ -40,8 +39,8 @@
                 <i class="bi bi-cloud-arrow-up fs-1 text-primary d-block mb-2"></i>
                 <h5 class="mb-2">فایل را اینجا رها کنید</h5>
                 <p class="text-muted mb-3">یا کلیک کنید تا فایل را انتخاب کنید</p>
-                <input type="file" name="file" id="fileInput" class="d-none"
-                       accept=".csv,.xlsx,.xls" required>
+                <input type="file" name="import_file" id="fileInput" class="d-none"
+                       accept=".csv" required>
                 <button type="button" class="btn btn-outline-primary" onclick="document.getElementById('fileInput').click()">
                     <i class="bi bi-folder2-open me-1"></i>انتخاب فایل
                 </button>
@@ -214,9 +213,17 @@ document.getElementById('uploadForm').addEventListener('submit', function(e) {
     xhr.onload = function() {
         if (xhr.status === 200) {
             const res = JSON.parse(xhr.responseText);
-            if (res.success && res.data) {
-                showPreview(res.data);
+            if (res.success) {
+                const msg = 'پردازش کامل شد: ' + (res.success_count ?? 0) + ' رکورد موفق، ' + (res.error_count ?? 0) + ' رکورد خطا';
+                showToast(msg, 'success');
+                if (res.errors && res.errors.length) {
+                    showToast('اولین خطا: ' + res.errors[0], 'warning');
+                }
+            } else {
+                showToast(res.message || 'خطا در پردازش فایل', 'error');
             }
+        } else {
+            showToast('خطا در ارتباط با سرور (' + xhr.status + ')', 'error');
         }
     };
 
@@ -231,13 +238,18 @@ function showPreview(data) {
     document.getElementById('previewCount').textContent = data.length + ' ردیف';
 
     data.forEach(function(row, i) {
+        const esc = function(v) {
+            return String(v == null ? '' : v)
+                .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+        };
         const tr = document.createElement('tr');
         tr.innerHTML = '<td>' + (i + 1) + '</td>'
-            + '<td>' + (row.user_name || row.user_id) + '</td>'
-            + '<td><span class="badge bg-secondary">' + (row.type_name || row.type_code) + '</span></td>'
-            + '<td>' + (row.date || '-') + '</td>'
+            + '<td>' + esc(row.user_name || row.user_id) + '</td>'
+            + '<td><span class="badge bg-secondary">' + esc(row.type_name || row.type_code) + '</span></td>'
+            + '<td>' + esc(row.date || '-') + '</td>'
             + '<td class="text-center">' + (row.quantity || 1) + '</td>'
-            + '<td>' + (row.title || '-') + '</td>'
+            + '<td>' + esc(row.title || '-') + '</td>'
             + '<td class="text-center fw-bold">' + (row.score || 0) + '</td>'
             + '<td class="text-center"><input type="checkbox" class="form-check-input import-row" checked></td>';
         previewBody.appendChild(tr);

@@ -60,7 +60,7 @@
                 <?php else: ?>
                     <?php foreach ($users as $index => $user): ?>
                         <tr>
-                            <td><?= ($pagination['currentPage'] - 1) * 15 + $index + 1 ?></td>
+                            <td><?= (($pagination['currentPage'] ?? 1) - 1) * ($pagination['perPage'] ?? 15) + $index + 1 ?></td>
                             <td class="fw-semibold"><?= e($user['name']) ?></td>
                             <td><code><?= e($user['username']) ?></code></td>
                             <td><?= e($user['email']) ?></td>

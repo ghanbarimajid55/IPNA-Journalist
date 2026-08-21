@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 header('Content-Type: application/json; charset=utf-8');
 session_start();
 
@@ -214,11 +214,8 @@ switch ($action) {
             // Step 9: Protect install directory with .htaccess
             addStep($steps, 'محافظت از پوشه نصب...');
             $htaccess = "# Install completed - restrict access\n";
-            $htaccess .= "Deny from all\n";
-            $htaccess .= "<FilesMatch \"^(index|process)\\.php$\">\n";
-            $htaccess .= "    # Allow re-install if .installed is removed\n";
-            $htaccess .= "    # Remove this file to re-enable installer\n";
-            $htaccess .= "</FilesMatch>\n";
+            $htaccess .= "# Remove this file to re-enable the installer\n";
+            $htaccess .= "Require all denied\n";
             file_put_contents(INSTALL_PATH . '/.htaccess', $htaccess);
 
             // Also create a web.config for IIS servers

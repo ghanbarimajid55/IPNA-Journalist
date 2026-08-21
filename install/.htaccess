@@ -1,6 +1,3 @@
-# Install completed - restrict access
-Deny from all
-<FilesMatch "^(index|process)\.php$">
-    # Allow re-install if .installed is removed
-    # Remove this file to re-enable installer
-</FilesMatch>
+# IPNA PMS installer — accessible until installation completes.
+# install/process.php rewrites this file to deny access after installation.
+Require all granted

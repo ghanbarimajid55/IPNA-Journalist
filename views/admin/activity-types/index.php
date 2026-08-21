@@ -48,7 +48,7 @@
                                 <div class="form-check form-switch d-inline-block">
                                     <input class="form-check-input toggle-status" type="checkbox"
                                            data-id="<?= $type['id'] ?>"
-                                           <?= $type['is_active'] ? 'checked' : '' ?>>
+                                            <?= ($type['status'] ?? 'active') === 'active' ? 'checked' : '' ?>>
                                 </div>
                             </td>
                             <td class="text-center">
@@ -99,7 +99,11 @@
                     </div>
                     <div class="mb-3">
                         <label class="form-label">دسته‌بندی</label>
-                        <input type="text" class="form-control" name="category" placeholder="مثلاً: تولید محتوا">
+                        <select class="form-select" name="category">
+                            <option value="news">خبر</option>
+                            <option value="photo">عکس</option>
+                            <option value="video">ویدئو</option>
+                        </select>
                     </div>
                 </div>
                 <div class="modal-footer border-0">
@@ -136,7 +140,11 @@
                     </div>
                     <div class="mb-3">
                         <label class="form-label">دسته‌بندی</label>
-                        <input type="text" class="form-control" name="category" id="editCategory">
+                        <select class="form-select" name="category" id="editCategory">
+                            <option value="news">خبر</option>
+                            <option value="photo">عکس</option>
+                            <option value="video">ویدئو</option>
+                        </select>
                     </div>
                 </div>
                 <div class="modal-footer border-0">

@@ -17,12 +17,28 @@ class Admin_ActivityController extends BaseController {
         if (!empty($_GET['date_from'])) $filters['date_from'] = $_GET['date_from'];
         if (!empty($_GET['date_to'])) $filters['date_to'] = $_GET['date_to'];
         if (!empty($_GET['category'])) $filters['category'] = $_GET['category'];
+        if (!empty($_GET['search'])) $filters['search'] = trim($_GET['search']);
 
-        $total = $activityModel->count($filters);
+        // Map view/filter key to the model's expected key (activity_type_id -> activity_type)
+        $modelFilters = $filters;
+        if (isset($modelFilters['activity_type_id'])) {
+            $modelFilters['activity_type'] = $modelFilters['activity_type_id'];
+            unset($modelFilters['activity_type_id']);
+        }
+
+        $total = $activityModel->count($modelFilters);
         $totalPages = max(1, ceil($total / $perPage));
 
-        $orderBy = $_GET['sort'] ?? 'created_at DESC';
-        $activities = $activityModel->findAll($filters, $orderBy, $perPage);
+        $allowedSorts = [
+            'a.activity_date DESC', 'a.activity_date ASC',
+            'a.created_at DESC', 'a.created_at ASC',
+            'a.score DESC', 'a.score ASC',
+            'a.quantity DESC', 'a.quantity ASC',
+        ];
+        $orderBy = (!empty($_GET['sort']) && in_array($_GET['sort'], $allowedSorts, true))
+            ? $_GET['sort']
+            : 'a.activity_date DESC';
+        $activities = $activityModel->findAll($modelFilters, $orderBy, $perPage, $offset);
 
         foreach ($activities as &$a) {
             $a['created_at_jalali'] = Helper::jalaliDate(substr($a['created_at'], 0, 10));
@@ -39,6 +55,11 @@ class Admin_ActivityController extends BaseController {
             'totalPages' => $totalPages,
             'total' => $total,
             'filters' => $filters,
+            'pagination' => [
+                'currentPage' => $page,
+                'totalPages' => $totalPages,
+                'perPage' => $perPage,
+            ],
         ];
 
         if ($this->isAjax()) {
@@ -77,6 +98,7 @@ class Admin_ActivityController extends BaseController {
             'user_id' => ['required', 'numeric'],
             'activity_type_id' => ['required', 'numeric'],
             'quantity' => ['required', 'numeric'],
+            'title' => ['required'],
         ]);
 
         if (!empty($errors)) {
@@ -100,19 +122,19 @@ class Admin_ActivityController extends BaseController {
             return;
         }
 
-        $currentUser = (new Auth())->user();
-
         $activityModel = new Activity();
         $activityId = $activityModel->create([
             'user_id' => (int)$input['user_id'],
-            'activity_type_id' => (int)$input['activity_type_id'],
+            'activity_date' => $this->parseActivityDate($input['date'] ?? ''),
+            'activity_type' => (int)$input['activity_type_id'],
             'quantity' => $quantity,
-            'description' => $input['description'] ?? null,
-            'source_url' => $input['source_url'] ?? null,
-            'created_by' => $currentUser['id'] ?? null,
+            'title' => trim((string)$input['title']),
+            'link' => !empty($input['link']) ? trim($input['link']) : null,
+            'mission' => !empty($input['is_mission']) ? 1 : 0,
+            'description' => !empty($input['description']) ? trim($input['description']) : null,
         ]);
 
-        Helper::auditLog('activity_created', 'activity', $activityId, null, $input);
+        Helper::auditLog('activity_created', 'activity', (int)$activityId, null, $input);
 
         if ($this->isAjax()) {
             $this->json(['success' => true, 'message' => 'فعالیت با موفقیت ثبت شد', 'id' => $activityId]);
@@ -170,10 +192,13 @@ class Admin_ActivityController extends BaseController {
 
         $updateData = [];
         if (isset($input['user_id'])) $updateData['user_id'] = (int)$input['user_id'];
-        if (isset($input['activity_type_id'])) $updateData['activity_type_id'] = (int)$input['activity_type_id'];
+        if (isset($input['activity_type_id'])) $updateData['activity_type'] = (int)$input['activity_type_id'];
         if (isset($input['quantity'])) $updateData['quantity'] = (int)$input['quantity'];
-        if (array_key_exists('description', $input)) $updateData['description'] = $input['description'];
-        if (array_key_exists('source_url', $input)) $updateData['source_url'] = $input['source_url'];
+        if (!empty($input['date'])) $updateData['activity_date'] = $this->parseActivityDate($input['date']);
+        if (isset($input['title'])) $updateData['title'] = trim((string)$input['title']);
+        if (array_key_exists('link', $input)) $updateData['link'] = $input['link'] !== '' ? trim($input['link']) : null;
+        if (isset($input['is_mission']) || !$this->isAjax()) $updateData['mission'] = !empty($input['is_mission']) ? 1 : 0;
+        if (array_key_exists('description', $input)) $updateData['description'] = $input['description'] !== '' ? trim($input['description']) : null;
 
         if (isset($updateData['quantity']) && $updateData['quantity'] <= 0) {
             if ($this->isAjax()) {
@@ -226,8 +251,36 @@ class Admin_ActivityController extends BaseController {
         $this->redirect('/admin/activities');
     }
 
-    private function isAjax(): bool {
+    protected function isAjax(): bool {
         return !empty($_SERVER['HTTP_X_REQUESTED_WITH'])
             && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest';
+    }
+
+    /**
+     * Accepts Jalali "Y/m/d" (Persian or ASCII digits) or Gregorian "Y-m-d";
+     * returns Gregorian "Y-m-d" (today on invalid/empty input).
+     */
+    private function parseActivityDate(string $raw): string {
+        $raw = trim($raw);
+        if ($raw === '') {
+            return date('Y-m-d');
+        }
+
+        $raw = strtr($raw, [
+            '۰'=>'0','۱'=>'1','۲'=>'2','۳'=>'3','۴'=>'4','۵'=>'5','۶'=>'6','۷'=>'7','۸'=>'8','۹'=>'9',
+            '٠'=>'0','١'=>'1','٢'=>'2','٣'=>'3','٤'=>'4','٥'=>'5','٦'=>'6','٧'=>'7','٨'=>'8','٩'=>'9',
+        ]);
+
+        if (preg_match('/^(\d{4})-(\d{1,2})-(\d{1,2})$/', $raw, $m)) {
+            return sprintf('%04d-%02d-%02d', (int)$m[1], (int)$m[2], (int)$m[3]);
+        }
+
+        // Jalali Y/m/d
+        if (preg_match('/^(\d{4})\/(\d{1,2})\/(\d{1,2})$/', $raw, $m)) {
+            [$gy, $gm, $gd] = Helper::jalaliToGregorian((int)$m[1], (int)$m[2], (int)$m[3]);
+            return sprintf('%04d-%02d-%02d', $gy, $gm, $gd);
+        }
+
+        return date('Y-m-d');
     }
 }

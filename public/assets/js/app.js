@@ -213,10 +213,11 @@ const Toast = {
     toast.className = `ipna-toast toast-${type}`;
     toast.innerHTML = `
       <span class="toast-icon"><i class="bi ${icons[type] || icons.info}"></i></span>
-      <span class="toast-message">${message}</span>
+      <span class="toast-message"></span>
       <button class="toast-close" onclick="Toast.dismiss(this.parentElement)">&times;</button>
       <div class="toast-progress"><div class="toast-progress-bar" style="animation-duration: ${duration}ms"></div></div>
     `;
+    toast.querySelector('.toast-message').textContent = message;
 
     this.container.appendChild(toast);
 

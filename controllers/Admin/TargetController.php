@@ -1,5 +1,12 @@
 <?php
 class Admin_TargetController extends BaseController {
+
+    // Target columns that exist in the monthly_targets table (database/schema.sql)
+    private const TARGET_FIELDS = [
+        'news_target', 'exclusive_news_target', 'interview_target', 'special_report_target',
+        'photo_target', 'gallery_target', 'video_target', 'score_target',
+    ];
+
     public function index() {
         if (!Middleware::admin()) return;
 
@@ -43,24 +50,21 @@ class Admin_TargetController extends BaseController {
         $targetModel = new MonthlyTarget();
         $existing = $targetModel->findByUser((int)$userId, $year, $month);
 
-        $updateData = [
-            'target_score' => (float)($input['target_score'] ?? 0),
-        ];
-        if (isset($input['target_articles'])) $updateData['target_articles'] = (int)$input['target_articles'];
-        if (isset($input['target_photos'])) $updateData['target_photos'] = (int)$input['target_photos'];
-        if (isset($input['notes'])) $updateData['notes'] = $input['notes'];
+        $updateData = $this->extractTargetFields($input);
 
         if ($existing) {
-            $targetModel->update($existing['id'], $updateData);
+            if (!empty($updateData)) {
+                $targetModel->update($existing['id'], $updateData);
+            }
             Helper::auditLog('target_updated', 'monthly_target', $existing['id'], $existing, $updateData);
         } else {
             $targetModel->create(array_merge($updateData, [
                 'user_id' => (int)$userId,
                 'year' => $year,
                 'month' => $month,
-                'created_by' => (new Auth())->user()['id'] ?? null,
             ]));
-            Helper::auditLog('target_created', 'monthly_target', null, null, $updateData);
+            Helper::auditLog('target_created', 'monthly_target', null, null,
+                array_merge($updateData, ['user_id' => (int)$userId, 'year' => $year, 'month' => $month]));
         }
 
         $this->json(['success' => true, 'message' => 'هدف ذخیره شد']);
@@ -81,22 +85,17 @@ class Admin_TargetController extends BaseController {
             if (!$userId) continue;
 
             $existing = $targetModel->findByUser($userId, $year, $month);
-
-            $updateData = [
-                'target_score' => (float)($t['target_score'] ?? 0),
-            ];
-            if (isset($t['target_articles'])) $updateData['target_articles'] = (int)$t['target_articles'];
-            if (isset($t['target_photos'])) $updateData['target_photos'] = (int)$t['target_photos'];
-            if (isset($t['notes'])) $updateData['notes'] = $t['notes'];
+            $updateData = $this->extractTargetFields(is_array($t) ? $t : []);
 
             if ($existing) {
-                $targetModel->update($existing['id'], $updateData);
+                if (!empty($updateData)) {
+                    $targetModel->update($existing['id'], $updateData);
+                }
             } else {
                 $targetModel->create(array_merge($updateData, [
                     'user_id' => $userId,
                     'year' => $year,
                     'month' => $month,
-                    'created_by' => (new Auth())->user()['id'] ?? null,
                 ]));
             }
         }
@@ -113,7 +112,6 @@ class Admin_TargetController extends BaseController {
             'user_id' => ['required', 'numeric'],
             'year' => ['required', 'numeric'],
             'month' => ['required', 'numeric'],
-            'target_score' => ['required', 'numeric'],
         ]);
 
         if (!empty($errors)) {
@@ -138,24 +136,19 @@ class Admin_TargetController extends BaseController {
             return;
         }
 
-        $currentUser = (new Auth())->user();
-
         $targetModel = new MonthlyTarget();
         $existing = $targetModel->findByUser((int)$input['user_id'], $year, $month);
 
-        $targetId = $targetModel->create([
+        $data = array_merge($this->extractTargetFields($input), [
             'user_id' => (int)$input['user_id'],
             'year' => $year,
             'month' => $month,
-            'target_score' => (float)$input['target_score'],
-            'target_articles' => !empty($input['target_articles']) ? (int)$input['target_articles'] : null,
-            'target_photos' => !empty($input['target_photos']) ? (int)$input['target_photos'] : null,
-            'notes' => $input['notes'] ?? null,
-            'created_by' => $currentUser['id'] ?? null,
         ]);
 
+        $targetId = $targetModel->create($data);
+
         $action = $existing ? 'target_updated' : 'target_created';
-        Helper::auditLog($action, 'monthly_target', $targetId, $existing, $input);
+        Helper::auditLog($action, 'monthly_target', $targetId, $existing, $data);
 
         if ($this->isAjax()) {
             $this->json(['success' => true, 'message' => 'هدف با موفقیت ذخیره شد', 'id' => $targetId]);
@@ -164,5 +157,20 @@ class Admin_TargetController extends BaseController {
 
         Helper::flash('success', 'هدف با موفقیت ذخیره شد');
         $this->redirect("/admin/targets?year={$year}&month={$month}");
+    }
+
+    private function extractTargetFields(array $input): array {
+        $data = [];
+        foreach (self::TARGET_FIELDS as $field) {
+            if (isset($input[$field])) {
+                $data[$field] = max(0, (int)$input[$field]);
+            }
+        }
+        return $data;
+    }
+
+    protected function isAjax(): bool {
+        return !empty($_SERVER['HTTP_X_REQUESTED_WITH'])
+            && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest';
     }
 }

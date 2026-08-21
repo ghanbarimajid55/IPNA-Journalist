@@ -7,7 +7,7 @@
     </div>
 
     <form id="activityForm" action="<?= BASE_URL ?>/reporter/activities/store" method="POST" class="needs-validation" novalidate>
-        <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrf_token ?? '') ?>">
+        <input type="hidden" name="csrf_token" value="<?= csrf_token() ?>">
 
         <div class="card border-0 shadow-sm mb-3">
             <div class="card-body">

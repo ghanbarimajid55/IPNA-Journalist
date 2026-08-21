@@ -153,23 +153,28 @@ class User {
 
         $sql = "
             SELECT
-                SUM(CASE WHEN a.activity_date = :today THEN a.score ELSE 0 END) as today_score,
-                SUM(CASE WHEN a.activity_date = :today THEN a.quantity ELSE 0 END) as today_count,
-                SUM(CASE WHEN a.activity_date BETWEEN :week_start AND :week_end THEN a.score ELSE 0 END) as week_score,
-                SUM(CASE WHEN a.activity_date BETWEEN :week_start AND :week_end THEN a.quantity ELSE 0 END) as week_count,
-                SUM(CASE WHEN a.activity_date BETWEEN :month_start AND :month_end THEN a.score ELSE 0 END) as month_score,
-                SUM(CASE WHEN a.activity_date BETWEEN :month_start AND :month_end THEN a.quantity ELSE 0 END) as month_count
+                SUM(CASE WHEN a.activity_date = :t1 THEN a.score ELSE 0 END) as today_score,
+                SUM(CASE WHEN a.activity_date = :t2 THEN a.quantity ELSE 0 END) as today_count,
+                SUM(CASE WHEN a.activity_date BETWEEN :ws1 AND :we1 THEN a.score ELSE 0 END) as week_score,
+                SUM(CASE WHEN a.activity_date BETWEEN :ws2 AND :we2 THEN a.quantity ELSE 0 END) as week_count,
+                SUM(CASE WHEN a.activity_date BETWEEN :ms1 AND :me1 THEN a.score ELSE 0 END) as month_score,
+                SUM(CASE WHEN a.activity_date BETWEEN :ms2 AND :me2 THEN a.quantity ELSE 0 END) as month_count
             FROM activities a
             WHERE a.user_id = :user_id AND a.status = 'active'
         ";
         $stmt = $this->db->prepare($sql);
         $stmt->execute([
             ':user_id'     => $userId,
-            ':today'       => $date,
-            ':week_start'  => $weekStart,
-            ':week_end'    => $weekEnd,
-            ':month_start' => $monthStart,
-            ':month_end'   => $monthEnd,
+            ':t1'          => $date,
+            ':t2'          => $date,
+            ':ws1'         => $weekStart,
+            ':we1'         => $weekEnd,
+            ':ws2'         => $weekStart,
+            ':we2'         => $weekEnd,
+            ':ms1'         => $monthStart,
+            ':me1'         => $monthEnd,
+            ':ms2'         => $monthStart,
+            ':me2'         => $monthEnd,
         ]);
         $stats = $stmt->fetch(PDO::FETCH_ASSOC);
 

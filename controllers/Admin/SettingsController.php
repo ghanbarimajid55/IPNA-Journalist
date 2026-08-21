@@ -18,6 +18,8 @@ class Admin_SettingsController extends BaseController
         }
 
         $settings = $this->settingModel->getAll();
+        // The settings view reads scalar values by key ($settings['site_name'] == string)
+        $settings = array_map(fn($row) => $row['value'], $settings);
 
         $this->view('admin.settings.index', [
             'settings' => $settings,

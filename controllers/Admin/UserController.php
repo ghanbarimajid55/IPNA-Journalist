@@ -16,7 +16,7 @@ class Admin_UserController extends BaseController {
 
         $total = $userModel->count($filters);
         $totalPages = max(1, ceil($total / $perPage));
-        $users = $userModel->findAll($filters, 'name', $perPage);
+        $users = $userModel->findAll($filters, 'name', $perPage, $offset);
         foreach ($users as &$u) {
             $u['created_at_jalali'] = Helper::jalaliDate($u['created_at']);
         }
@@ -27,6 +27,13 @@ class Admin_UserController extends BaseController {
             'totalPages' => $totalPages,
             'total' => $total,
             'filters' => $filters,
+            'search' => $filters['search'] ?? '',
+            'role_filter' => $filters['role'] ?? '',
+            'pagination' => [
+                'currentPage' => $page,
+                'totalPages' => $totalPages,
+                'perPage' => $perPage,
+            ],
         ];
 
         if ($this->isAjax()) {
@@ -171,6 +178,26 @@ class Admin_UserController extends BaseController {
         if (isset($input['status'])) $updateData['status'] = $input['status'];
         if (!empty($input['password'])) $updateData['password'] = $input['password'];
 
+        // Whitelist role/status (DB ENUMs reject invalid values in strict mode)
+        if (isset($updateData['role']) && !in_array($updateData['role'], ['admin', 'reporter', 'photographer'], true)) {
+            if ($this->isAjax()) {
+                $this->json(['success' => false, 'errors' => ['role' => 'نقش نامعتبر است']], 422);
+                return;
+            }
+            Helper::flash('error', 'نقش نامعتبر است');
+            $this->redirect('/admin/users');
+            return;
+        }
+        if (isset($updateData['status']) && !in_array($updateData['status'], ['active', 'inactive'], true)) {
+            if ($this->isAjax()) {
+                $this->json(['success' => false, 'errors' => ['status' => 'وضعیت نامعتبر است']], 422);
+                return;
+            }
+            Helper::flash('error', 'وضعیت نامعتبر است');
+            $this->redirect('/admin/users');
+            return;
+        }
+
         if (!empty($updateData['email']) && $updateData['email'] !== $existing['email']) {
             $emailCheck = $userModel->findByEmail($updateData['email']);
             if ($emailCheck) {
@@ -236,7 +263,7 @@ class Admin_UserController extends BaseController {
         $this->redirect('/admin/users');
     }
 
-    private function isAjax(): bool {
+    protected function isAjax(): bool {
         return !empty($_SERVER['HTTP_X_REQUESTED_WITH'])
             && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest';
     }

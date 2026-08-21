@@ -6,13 +6,10 @@ class Admin_ActivityTypeController extends BaseController {
         $activityTypeModel = new ActivityType();
 
         $status = $_GET['status'] ?? 'active';
-        $types = $activityTypeModel->findAll($status);
-
-        $allTypes = $activityTypeModel->findAll('active');
-        $inactiveTypes = $activityTypeModel->findAll('inactive');
+        $types = $activityTypeModel->findAll(null);
 
         $data = [
-            'types' => array_merge($types, $inactiveTypes),
+            'activityTypes' => $types,
             'status' => $status,
         ];
 
@@ -31,8 +28,8 @@ class Admin_ActivityTypeController extends BaseController {
 
         $errors = $this->validate($input, [
             'name' => ['required'],
-            'category' => ['required'],
-            'score_per_unit' => ['required', 'numeric'],
+            'code' => ['required'],
+            'score' => ['required', 'numeric'],
         ]);
 
         if (!empty($errors)) {
@@ -45,8 +42,9 @@ class Admin_ActivityTypeController extends BaseController {
             return;
         }
 
-        $validCategories = ['article', 'photo', 'video', 'social_media', 'general'];
-        if (!in_array($input['category'], $validCategories)) {
+        $validCategories = ['news', 'photo', 'video'];
+        $category = $input['category'] ?? 'news';
+        if (!in_array($category, $validCategories, true)) {
             if ($this->isAjax()) {
                 $this->json(['success' => false, 'errors' => ['category' => 'دسته‌بندی نامعتبر است']], 422);
                 return;
@@ -57,14 +55,23 @@ class Admin_ActivityTypeController extends BaseController {
         }
 
         $activityTypeModel = new ActivityType();
+        $code = trim((string)$input['code']);
+        if ($activityTypeModel->findByCode($code)) {
+            if ($this->isAjax()) {
+                $this->json(['success' => false, 'errors' => ['code' => 'کد تکراری است']], 422);
+                return;
+            }
+            Helper::flash('error', 'کد تکراری است');
+            $this->redirect('/admin/activity-types');
+            return;
+        }
+
         $typeId = $activityTypeModel->create([
-            'name' => trim($input['name']),
-            'category' => $input['category'],
-            'score_per_unit' => (float)$input['score_per_unit'],
-            'unit_label' => $input['unit_label'] ?? 'عدد',
-            'description' => $input['description'] ?? null,
+            'name' => trim((string)$input['name']),
+            'code' => $code,
+            'score' => (int)$input['score'],
+            'category' => $category,
             'status' => 'active',
-            'sort_order' => (int)($input['sort_order'] ?? 0),
         ]);
 
         Helper::auditLog('activity_type_created', 'activity_type', $typeId, null, $input);
@@ -96,17 +103,17 @@ class Admin_ActivityTypeController extends BaseController {
         $input = $this->getInput();
 
         $updateData = [];
-        if (isset($input['name'])) $updateData['name'] = trim($input['name']);
+        if (isset($input['name'])) $updateData['name'] = trim((string)$input['name']);
+        if (isset($input['code'])) $updateData['code'] = trim((string)$input['code']);
+        if (isset($input['score'])) $updateData['score'] = (int)$input['score'];
         if (isset($input['category'])) $updateData['category'] = $input['category'];
-        if (isset($input['score_per_unit'])) $updateData['score_per_unit'] = (float)$input['score_per_unit'];
-        if (isset($input['unit_label'])) $updateData['unit_label'] = $input['unit_label'];
-        if (array_key_exists('description', $input)) $updateData['description'] = $input['description'];
-        if (isset($input['status'])) $updateData['status'] = $input['status'];
-        if (isset($input['sort_order'])) $updateData['sort_order'] = (int)$input['sort_order'];
+        if (isset($input['status']) && in_array($input['status'], ['active', 'inactive'], true)) {
+            $updateData['status'] = $input['status'];
+        }
 
         if (!empty($updateData['category'])) {
-            $validCategories = ['article', 'photo', 'video', 'social_media', 'general'];
-            if (!in_array($updateData['category'], $validCategories)) {
+            $validCategories = ['news', 'photo', 'video'];
+            if (!in_array($updateData['category'], $validCategories, true)) {
                 if ($this->isAjax()) {
                     $this->json(['success' => false, 'errors' => ['category' => 'دسته‌بندی نامعتبر است']], 422);
                     return;
@@ -142,10 +149,10 @@ class Admin_ActivityTypeController extends BaseController {
         }
 
         $input = $this->getInput();
-        $score = (float)($input['score'] ?? 0);
+        $score = max(0, (int)($input['score'] ?? 0));
 
-        $activityTypeModel->update($id, ['score_per_unit' => $score]);
-        Helper::auditLog('activity_type_score_updated', 'activity_type', $id, $existing, ['score_per_unit' => $score]);
+        $activityTypeModel->update($id, ['score' => $score]);
+        Helper::auditLog('activity_type_score_updated', 'activity_type', $id, $existing, ['score' => $score]);
 
         $this->json(['success' => true, 'message' => 'امتیاز با موفقیت بروزرسانی شد']);
     }
@@ -196,7 +203,7 @@ class Admin_ActivityTypeController extends BaseController {
         $this->redirect('/admin/activity-types');
     }
 
-    private function isAjax(): bool {
+    protected function isAjax(): bool {
         return !empty($_SERVER['HTTP_X_REQUESTED_WITH'])
             && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest';
     }

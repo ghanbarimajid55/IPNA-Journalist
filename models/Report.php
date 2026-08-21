@@ -25,7 +25,7 @@ class Report {
                 SUM(CASE WHEN at.code = 'special_report' THEN a.quantity ELSE 0 END) as special_report_count,
                 SUM(CASE WHEN at.code = 'news_photo' THEN a.quantity ELSE 0 END) as photo_news,
                 SUM(CASE WHEN at.code = 'photo_gallery' THEN a.quantity ELSE 0 END) as gallery_count,
-                SUM(CASE WHEN at.code = 'exclusive_video' THEN a.quantity ELSE 0 END) as video_count
+                SUM(CASE WHEN at.code = 'exclusive_video' THEN a.quantity ELSE 0 END) as exclusive_video_count
             FROM users u
             LEFT JOIN activities a ON u.id = a.user_id AND a.activity_date = :date AND a.status = 'active'
             LEFT JOIN activity_types at ON a.activity_type = at.id
@@ -99,7 +99,7 @@ class Report {
                 SUM(CASE WHEN at.code = 'special_report' THEN a.quantity ELSE 0 END) as special_report_count,
                 SUM(CASE WHEN at.code = 'news_photo' THEN a.quantity ELSE 0 END) as photo_news,
                 SUM(CASE WHEN at.code = 'photo_gallery' THEN a.quantity ELSE 0 END) as gallery_count,
-                SUM(CASE WHEN at.code = 'exclusive_video' THEN a.quantity ELSE 0 END) as video_count
+                SUM(CASE WHEN at.code = 'exclusive_video' THEN a.quantity ELSE 0 END) as exclusive_video_count
             FROM users u
             LEFT JOIN activities a ON u.id = a.user_id
                 AND a.activity_date BETWEEN :start_date AND :end_date
@@ -170,7 +170,7 @@ class Report {
                 SUM(CASE WHEN at.code = 'special_report' THEN a.quantity ELSE 0 END) as special_report_count,
                 SUM(CASE WHEN at.code = 'news_photo' THEN a.quantity ELSE 0 END) as photo_news,
                 SUM(CASE WHEN at.code = 'photo_gallery' THEN a.quantity ELSE 0 END) as gallery_count,
-                SUM(CASE WHEN at.code = 'exclusive_video' THEN a.quantity ELSE 0 END) as video_count,
+                SUM(CASE WHEN at.code = 'exclusive_video' THEN a.quantity ELSE 0 END) as exclusive_video_count,
                 mt.score_target,
                 mt.news_target,
                 mt.photo_target,
@@ -240,7 +240,7 @@ class Report {
                 SUM(CASE WHEN at.code = 'special_report' THEN a.quantity ELSE 0 END) as special_report_count,
                 SUM(CASE WHEN at.code = 'news_photo' THEN a.quantity ELSE 0 END) as photo_news,
                 SUM(CASE WHEN at.code = 'photo_gallery' THEN a.quantity ELSE 0 END) as gallery_count,
-                SUM(CASE WHEN at.code = 'exclusive_video' THEN a.quantity ELSE 0 END) as video_count,
+                SUM(CASE WHEN at.code = 'exclusive_video' THEN a.quantity ELSE 0 END) as exclusive_video_count,
                 mt.score_target,
                 CASE
                     WHEN mt.score_target > 0 THEN ROUND((COALESCE(SUM(a.score), 0) / mt.score_target) * 100, 1)

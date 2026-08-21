@@ -72,88 +72,123 @@ class Helper
 
     public static function gregorianToJalali(int $gy, int $gm, int $gd): array
     {
-        $g_d_m = [0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334];
-
-        if ($gy > 1600) {
-            $jy = 979;
-            $gy -= 1600;
-        } else {
-            $jy = 0;
-            $gy -= 621;
-        }
-
-        $gy2 = ($gm > 2) ? ($gy + 1) : $gy;
-        $days = (365 * $gy) + (int)(($gy2 + 3) / 4) - (int)(($gy2 + 99) / 100) + (int)(($gy2 + 399) / 400)
-                + $gd + $g_d_m[$gm - 1] - 1;
-
-        $jy += 33 * (int)($days / 12053);
-        $days %= 12053;
-        $jy += 4 * (int)($days / 1461);
-        $days %= 1461;
-        if ($days > 365) {
-            $jy += (int)(($days - 1) / 365);
-            $days = ($days - 1) % 365;
-        }
-
-        if ($days < 186) {
-            $jm = 1 + (int)($days / 31);
-            $jd = 1 + ($days % 31);
-        } else {
-            $days -= 186;
-            $jm = 7 + (int)($days / 30);
-            $jd = 1 + ($days % 30);
-        }
-
-        return [$jy, $jm, $jd];
+        return self::jdnToJalali(self::gregorianToJdn($gy, $gm, $gd));
     }
 
     public static function jalaliToGregorian(int $jy, int $jm, int $jd): array
     {
-        $jy += 79;
-        $jm--;
-        $days = -355668 + (365 * $jy) + ((int)($jy / 33)) * 8 + (int)(($jy % 33 + 1) / 4)
-                + $jd + (($jm < 7) ? ($jm - 1) * 31 : (($jm - 7) * 30 + 6));
+        return self::jdnToGregorian(self::jalaliToJdn($jy, $jm, $jd));
+    }
 
-        $gy = 1600 + 400 * (int)($days / 146097);
-        $days %= 146097;
-        if ($days < 36525) {
-            $gy += 100 * (int)($days / 36524);
-            $days %= 36524;
-            if ($days >= 365) {
-                $gy++;
-            }
+    // ── Jalaali calendar helpers (ported from the verified jalaali-js algorithm) ──
+
+    private const JALALI_BREAKS = [
+        -61, 9, 38, 199, 426, 686, 756, 818, 1111, 1181, 1210,
+        1635, 2060, 2097, 2192, 2262, 2324, 2394, 2456, 3178,
+    ];
+
+    private static function jalIdiv(int $a, int $b): int
+    {
+        return intdiv($a - ($a % $b), $b);
+    }
+
+    private static function jalMod(int $a, int $b): int
+    {
+        return $a - self::jalIdiv($a, $b) * $b;
+    }
+
+    /** @return array{leap:int,gy:int,march:int}|null */
+    private static function jalCal(int $jy): ?array
+    {
+        $breaks = self::JALALI_BREAKS;
+        $bl = count($breaks);
+        if ($jy < $breaks[0] || $jy >= $breaks[$bl - 1]) {
+            return null;
         }
-
-        $gy += (int)($days / 365);
-        $days %= 365;
-        if ($days > 218) {
-            $gy++;
-            $days -= 219;
-        } elseif ($days == 218) {
-            $gy++;
-            $days = 0;
-        }
-
-        $gm = 0;
-        if ($days >= 0) {
-            $remaining = $days;
-            $monthDays = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
-
-            if ($gy % 4 == 0 && ($gy % 100 != 0 || $gy % 400 == 0)) {
-                $monthDays[1] = 29;
+        $gy = $jy + 621;
+        $leapJ = -14;
+        $jp = $breaks[0];
+        $jump = 0;
+        for ($i = 1; $i < $bl; $i++) {
+            $jm = $breaks[$i];
+            $jump = $jm - $jp;
+            if ($jy < $jm) {
+                break;
             }
-
-            foreach ($monthDays as $index => $md) {
-                if ($remaining < $md) {
-                    $gm = $index + 1;
-                    $gd = $remaining + 1;
-                    break;
-                }
-                $remaining -= $md;
-            }
+            $leapJ += self::jalIdiv($jump, 33) * 8 + self::jalIdiv(self::jalMod($jump, 33), 4);
+            $jp = $jm;
         }
+        $n = $jy - $jp;
+        $leapJ += self::jalIdiv($n, 33) * 8 + self::jalIdiv(self::jalMod($n, 33) + 3, 4);
+        if (self::jalMod($jump, 33) === 4 && $jump - $n === 4) {
+            $leapJ++;
+        }
+        $leapG = self::jalIdiv($gy, 4) - self::jalIdiv((self::jalIdiv($gy, 100) + 1) * 3, 4) - 150;
+        $march = 20 + $leapJ - $leapG;
+        if ($jump - $n < 6) {
+            $n = $n - $jump + self::jalIdiv($jump + 4, 33) * 33;
+        }
+        $leap = self::jalMod(self::jalMod($n + 1, 33) - 1, 4);
+        if ($leap === -1) {
+            $leap = 4;
+        }
+        return ['leap' => $leap, 'gy' => $gy, 'march' => $march];
+    }
 
+    private static function gregorianToJdn(int $gy, int $gm, int $gd): int
+    {
+        $d = self::jalIdiv(($gy + self::jalIdiv($gm - 8, 6) + 100100) * 1461, 4)
+            + self::jalIdiv(153 * self::jalMod($gm + 9, 12) + 2, 5)
+            + $gd - 34840408;
+        return $d - self::jalIdiv(self::jalIdiv($gy + 100100 + self::jalIdiv($gm - 8, 6), 100) * 3, 4) + 752;
+    }
+
+    private static function jalaliToJdn(int $jy, int $jm, int $jd): ?int
+    {
+        $r = self::jalCal($jy);
+        if ($r === null) {
+            return null;
+        }
+        return self::gregorianToJdn($r['gy'], 3, $r['march'])
+            + ($jm - 1) * 31
+            - self::jalIdiv($jm, 7) * ($jm - 7)
+            + $jd - 1;
+    }
+
+    private static function jdnToGregorian(int $jdn): array
+    {
+        $j = 4 * $jdn + 139361631;
+        $j = $j + self::jalIdiv(self::jalIdiv(4 * $jdn + 183187720, 146097) * 3, 4) * 4 - 3908;
+        $i = self::jalIdiv(self::jalMod($j, 1461), 4) * 5 + 308;
+        $gd = self::jalIdiv(self::jalMod($i, 153), 5) + 1;
+        $gm = self::jalMod(self::jalIdiv($i, 153), 12) + 1;
+        $gy = self::jalIdiv($j, 1461) - 100100 + self::jalIdiv(8 - $gm, 6);
         return [$gy, $gm, $gd];
+    }
+
+    private static function jdnToJalali(int $jdn): array
+    {
+        [$gy] = self::jdnToGregorian($jdn);
+        $jy = $gy - 621;
+        $r = self::jalCal($jy);
+        if ($r === null) {
+            return [$gy, 1, 1];
+        }
+        $jdn1f = self::gregorianToJdn($gy, 3, $r['march']);
+        $k = $jdn - $jdn1f;
+        if ($k >= 0) {
+            if ($k <= 185) {
+                return [$jy, 1 + self::jalIdiv($k, 31), self::jalMod($k, 31) + 1];
+            }
+            $k -= 186;
+        } else {
+            $jy -= 1;
+            $k += 179;
+            if ($r['leap'] === 1) {
+                $k += 1;
+            }
+        }
+        return [$jy, 7 + self::jalIdiv($k, 30), self::jalMod($k, 30) + 1];
     }
 
     public static function formatNumber(float|int $num): string

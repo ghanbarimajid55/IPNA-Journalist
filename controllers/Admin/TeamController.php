@@ -255,7 +255,7 @@ class Admin_TeamController extends BaseController {
         $this->redirect('/admin/team');
     }
 
-    private function isAjax(): bool {
+    protected function isAjax(): bool {
         return !empty($_SERVER['HTTP_X_REQUESTED_WITH'])
             && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest';
     }

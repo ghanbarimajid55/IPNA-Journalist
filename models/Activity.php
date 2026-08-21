@@ -149,7 +149,7 @@ class Activity {
         $fields = [];
         $params = [':id' => $id];
 
-        $allowed = ['activity_date', 'activity_type', 'quantity', 'title', 'link', 'mission', 'description'];
+        $allowed = ['user_id', 'activity_date', 'activity_type', 'quantity', 'title', 'link', 'mission', 'description'];
         foreach ($allowed as $field) {
             if (array_key_exists($field, $data)) {
                 $fields[] = "{$field} = :{$field}";

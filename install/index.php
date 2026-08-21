@@ -4,7 +4,7 @@ define('BASE_PATH', dirname(__DIR__));
 define('INSTALL_PATH', __DIR__);
 
 $installedMarker = BASE_PATH . '/.installed';
-$isInstalled = file_exists($installedMarker) && !isset($_GET['force']);
+$isInstalled = file_exists($installedMarker);
 
 if ($isInstalled) {
     $detectedUrl = detectBaseUrl();
@@ -25,7 +25,6 @@ if ($isInstalled) {
         <h2 class="text-success">سیستم قبلاً نصب شده است</h2>
         <p class="text-muted mt-2">برای بازنصب، فایل <code>.installed</code> از پوشه اصلی را حذف کنید.</p>
         <a href="<?= $detectedUrl ?>/dashboard" class="btn btn-primary mt-3">ورود به سامانه</a>
-        <a href="?force=1" class="btn btn-outline-danger mt-3">نصب مجدد</a>
     </div>
 </body>
 </html>

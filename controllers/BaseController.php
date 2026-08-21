@@ -42,17 +42,21 @@ abstract class BaseController {
         $errors = [];
         foreach ($rules as $field => $rule) {
             $value = $data[$field] ?? null;
-            if (in_array('required', $rule) && empty($value)) {
+            $rule = array_map('strval', (array)$rule);
+            if (in_array('required', $rule, true) && empty($value)) {
                 $errors[$field] = "فیلد {$field} الزامی است";
             }
-            if (in_array('email', $rule) && !filter_var($value, FILTER_VALIDATE_EMAIL)) {
+            if (in_array('email', $rule, true) && $value !== null && !filter_var($value, FILTER_VALIDATE_EMAIL)) {
                 $errors[$field] = 'ایمیل معتبر نیست';
             }
-            if (isset($rule['min']) && strlen($value) < $rule['min']) {
-                $errors[$field] = "حداقل {$rule['min']} کاراکتر لازم است";
-            }
-            if (isset($rule['numeric']) && !is_numeric($value)) {
+            if (in_array('numeric', $rule, true) && $value !== null && !is_numeric($value)) {
                 $errors[$field] = 'باید عدد باشد';
+            }
+            if (in_array('min', $rule, true) || isset($rule['min'])) {
+                $min = isset($rule['min']) ? (int)$rule['min'] : 0;
+                if ($value !== null && mb_strlen((string)$value) < $min) {
+                    $errors[$field] = "حداقل {$min} کاراکتر لازم است";
+                }
             }
         }
         return $errors;

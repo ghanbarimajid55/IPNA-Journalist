@@ -111,7 +111,7 @@
                                     </a>
                                     <form method="POST" action="<?= BASE_URL ?>/photographer/activities/<?= $activity['id'] ?>/delete" class="d-inline"
                                           onsubmit="return confirm('آیا از حذف این فعالیت مطمئن هستید؟');">
-                                        <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrf_token ?? '') ?>">
+                                        <input type="hidden" name="csrf_token" value="<?= csrf_token() ?>">
                                         <button type="submit" class="btn btn-outline-danger" title="حذف">
                                             <i class="bi bi-trash"></i>
                                         </button>

@@ -30,23 +30,20 @@ class Admin_ExportController extends BaseController
             $date = substr($type, 6);
             $this->exportDaily($date);
         } elseif (strpos($type, 'weekly-') === 0) {
-            $parts = explode('-', substr($type, 7));
-            if (count($parts) >= 2) {
-                $this->exportWeekly($parts[0] . '-' . $parts[1] . '-' . $parts[2], $parts[3] . '-' . $parts[4] . '-' . $parts[5]);
+            if (preg_match('/^weekly-(\d{4}-\d{2}-\d{2})-(\d{4}-\d{2}-\d{2})$/', $type, $m)) {
+                $this->exportWeekly($m[1], $m[2]);
             } else {
                 $this->json(['success' => false, 'message' => 'فرمت تاریخ نامعتبر'], 400);
             }
         } elseif (strpos($type, 'monthly-') === 0) {
-            $parts = explode('-', substr($type, 8));
-            if (count($parts) >= 2) {
-                $this->exportMonthly((int)$parts[0], (int)$parts[1]);
+            if (preg_match('/^monthly-(\d{4})-(\d{1,2})$/', $type, $m)) {
+                $this->exportMonthly((int)$m[1], (int)$m[2]);
             } else {
                 $this->json(['success' => false, 'message' => 'فرمت تاریخ نامعتبر'], 400);
             }
         } elseif (strpos($type, 'ranking-') === 0) {
-            $parts = explode('-', substr($type, 8));
-            if (count($parts) >= 2) {
-                $this->exportRanking((int)$parts[0], (int)$parts[1]);
+            if (preg_match('/^ranking-(\d{4})-(\d{1,2})$/', $type, $m)) {
+                $this->exportRanking((int)$m[1], (int)$m[2]);
             } else {
                 $this->json(['success' => false, 'message' => 'فرمت تاریخ نامعتبر'], 400);
             }
@@ -77,13 +74,13 @@ class Admin_ExportController extends BaseController
                 (int)$user['activity_count'],
                 (int)$user['total_quantity'],
                 (float)$user['total_score'],
-                (int)$user['articles'],
-                0,
-                0,
-                0,
-                (int)$user['photos'],
-                0,
-                (int)$user['videos'],
+                (int)$user['news_count'],
+                (int)($user['news_exclusive'] ?? 0),
+                (int)($user['interview_count'] ?? 0),
+                (int)($user['special_report_count'] ?? 0),
+                (int)$user['photo_count'],
+                (int)($user['gallery_count'] ?? 0),
+                (int)$user['video_count'],
             ];
         }
 
@@ -109,10 +106,10 @@ class Admin_ExportController extends BaseController
                 (float)$user['total_score'],
                 (int)$user['total_quantity'],
                 (int)$user['activity_count'],
-                (int)$user['articles'],
-                (int)$user['photos'],
-                (int)$user['videos'],
-                (int)$user['social_media'],
+                (int)$user['news_count'],
+                (int)$user['photo_count'],
+                (int)$user['video_count'],
+                0,
             ];
         }
 
@@ -139,12 +136,14 @@ class Admin_ExportController extends BaseController
                 (float)$user['total_score'],
                 (int)$user['total_quantity'],
                 (int)$user['activity_count'],
-                (int)$user['articles'],
-                (int)$user['photos'],
-                (int)$user['videos'],
-                (int)$user['social_media'],
-                $user['target_score'] !== null ? (float)$user['target_score'] : '-',
-                $user['score_achievement'] !== null ? $user['score_achievement'] . '%' : '-',
+                (int)$user['news_count'],
+                (int)$user['photo_count'],
+                (int)$user['video_count'],
+                0,
+                $user['score_target'] !== null ? (float)$user['score_target'] : '-',
+                $user['score_target'] > 0 && (float)$user['total_score'] > 0
+                    ? round(((float)$user['total_score'] / (float)$user['score_target']) * 100, 1) . '%'
+                    : '-',
             ];
         }
 
@@ -169,7 +168,7 @@ class Admin_ExportController extends BaseController
                 (float)$person['total_score'],
                 (int)$person['total_quantity'],
                 (int)$person['activity_count'],
-                $person['target_score'] !== null ? (float)$person['target_score'] : '-',
+                $person['score_target'] !== null ? (float)$person['score_target'] : '-',
                 $person['achievement_pct'] !== null ? $person['achievement_pct'] . '%' : '-',
             ];
         }
@@ -190,10 +189,18 @@ class Admin_ExportController extends BaseController
         fputcsv($output, $headers);
 
         foreach ($rows as $row) {
-            fputcsv($output, $row);
+            fputcsv($output, array_map([$this, 'neutralizeFormula'], $row));
         }
 
         fclose($output);
         exit;
+    }
+
+    private function neutralizeFormula(mixed $cell): mixed
+    {
+        if (is_string($cell) && $cell !== '' && str_contains('=+-@', $cell[0])) {
+            return "'" . $cell;
+        }
+        return $cell;
     }
 }

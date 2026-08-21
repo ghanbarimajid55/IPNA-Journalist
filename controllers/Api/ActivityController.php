@@ -21,10 +21,11 @@ class Api_ActivityController extends BaseController
         $currentUser = $auth->user();
         $filters = [];
 
-        if (!empty($_GET['user_id'])) {
-            $filters['user_id'] = (int)$_GET['user_id'];
-        } elseif ($currentUser['role'] !== 'admin') {
+        // Non-admins are always scoped to their own activities
+        if ($currentUser['role'] !== 'admin') {
             $filters['user_id'] = $currentUser['id'];
+        } elseif (!empty($_GET['user_id'])) {
+            $filters['user_id'] = (int)$_GET['user_id'];
         }
 
         if (!empty($_GET['activity_type_id'])) {

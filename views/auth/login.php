@@ -26,7 +26,7 @@
             <?php if (isset($_SESSION['flash_error'])): ?>
                 <div class="alert alert-danger alert-dismissible fade show">
                     <i class="bi bi-exclamation-triangle me-1"></i>
-                    <?= $_SESSION['flash_error'] ?>
+                    <?= e($_SESSION['flash_error']) ?>
                     <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
                 </div>
                 <?php unset($_SESSION['flash_error']); ?>
@@ -35,14 +35,14 @@
             <?php if (isset($_SESSION['flash_success'])): ?>
                 <div class="alert alert-success alert-dismissible fade show">
                     <i class="bi bi-check-circle me-1"></i>
-                    <?= $_SESSION['flash_success'] ?>
+                    <?= e($_SESSION['flash_success']) ?>
                     <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
                 </div>
                 <?php unset($_SESSION['flash_success']); ?>
             <?php endif; ?>
 
             <form method="POST" action="<?= BASE_URL ?>/login" id="loginForm">
-                <input type="hidden" name="csrf_token" value="<?= Helper::generateCsrfToken() ?>">
+                <input type="hidden" name="csrf_token" value="<?= csrf_token() ?>">
                 
                 <div class="mb-3">
                     <label for="username" class="form-label">

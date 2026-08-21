@@ -10,7 +10,7 @@ $baseUrl = BASE_URL;
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="<?= csrf_token() ?>">
-    <title><?= $title ?? 'IPNA PMS' ?> | سیستم مدیریت عملکرد</title>
+    <title><?= e($title ?? 'IPNA PMS') ?> | سیستم مدیریت عملکرد</title>
     <link rel="manifest" href="<?= $baseUrl ?>/manifest.json">
     <meta name="theme-color" content="#1a237e">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
@@ -142,7 +142,7 @@ $baseUrl = BASE_URL;
         </ul>
         <div class="sidebar-footer mt-auto p-3">
             <form method="POST" action="<?= $baseUrl ?>/logout">
-                <input type="hidden" name="csrf_token" value="<?= Helper::generateCsrfToken() ?>">
+                <input type="hidden" name="csrf_token" value="<?= csrf_token() ?>">
                 <button type="submit" class="btn btn-outline-light btn-sm w-100">
                     <i class="bi bi-box-arrow-left"></i> خروج
                 </button>
@@ -161,10 +161,10 @@ $baseUrl = BASE_URL;
                 <span class="badge bg-primary me-2">
                     <?php
                     $roleNames = ['admin' => 'مدیر', 'reporter' => 'خبرنگار', 'photographer' => 'عکاس'];
-                    echo $roleNames[$role] ?? $role;
+                    echo e($roleNames[$role] ?? $role);
                     ?>
                 </span>
-                <span class="text-muted"><?= $currentUser['name'] ?? '' ?></span>
+                <span class="text-muted"><?= e($currentUser['name'] ?? '') ?></span>
             </div>
             <div class="d-flex align-items-center">
                 <span class="text-muted ms-3 d-none d-md-inline"><?= Helper::jalaliDate(date('Y-m-d')) ?></span>
@@ -177,7 +177,7 @@ $baseUrl = BASE_URL;
                         <li><hr class="dropdown-divider"></li>
                         <li>
                             <form method="POST" action="<?= $baseUrl ?>/logout">
-                                <input type="hidden" name="csrf_token" value="<?= Helper::generateCsrfToken() ?>">
+                                <input type="hidden" name="csrf_token" value="<?= csrf_token() ?>">
                                 <button type="submit" class="dropdown-item"><i class="bi bi-box-arrow-left"></i> خروج</button>
                             </form>
                         </li>
@@ -196,14 +196,14 @@ $baseUrl = BASE_URL;
             <?php if ($flashSuccess): ?>
                 <div class="toast show" role="alert">
                     <div class="toast-body bg-success text-white d-flex align-items-center">
-                        <i class="bi bi-check-circle me-2"></i> <?= $flashSuccess ?>
+                        <i class="bi bi-check-circle me-2"></i> <?= e($flashSuccess) ?>
                     </div>
                 </div>
             <?php endif; ?>
             <?php if ($flashError): ?>
                 <div class="toast show" role="alert">
                     <div class="toast-body bg-danger text-white d-flex align-items-center">
-                        <i class="bi bi-exclamation-circle me-2"></i> <?= $flashError ?>
+                        <i class="bi bi-exclamation-circle me-2"></i> <?= e($flashError) ?>
                     </div>
                 </div>
             <?php endif; ?>

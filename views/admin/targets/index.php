@@ -70,7 +70,7 @@
                             <td class="fw-semibold"><?= e($target['user_name']) ?></td>
                             <td><?= e($target['position'] ?? '-') ?></td>
                             <?php
-                            $columns = ['news', 'exclusive', 'interview', 'special_report', 'photo', 'gallery', 'video'];
+                            $columns = ['news_target', 'exclusive_news_target', 'interview_target', 'special_report_target', 'photo_target', 'gallery_target', 'video_target'];
                             foreach ($columns as $col): ?>
                                 <td class="text-center">
                                     <input type="number" class="form-control form-control-sm text-center target-input"
@@ -82,7 +82,7 @@
                                 </td>
                             <?php endforeach; ?>
                             <td class="text-center fw-bold text-primary">
-                                <?= number_format($target['target_score'] ?? 0) ?>
+                                <?= number_format($target['score_target'] ?? 0) ?>
                             </td>
                             <td class="text-center">
                                 <button class="btn btn-sm btn-outline-primary save-row"

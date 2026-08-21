@@ -91,21 +91,21 @@
                 <?php else: ?>
                     <?php foreach ($activities as $index => $activity): ?>
                         <tr>
-                            <td><?= ($pagination['currentPage'] - 1) * 15 + $index + 1 ?></td>
-                            <td class="text-nowrap"><i class="bi bi-calendar3 me-1 text-muted"></i><?= e($activity['date']) ?></td>
+                            <td><?= (($pagination['currentPage'] ?? 1) - 1) * ($pagination['perPage'] ?? 20) + $index + 1 ?></td>
+                            <td class="text-nowrap"><i class="bi bi-calendar3 me-1 text-muted"></i><?= e(Helper::jalaliDate($activity['activity_date'])) ?></td>
                             <td class="fw-semibold"><?= e($activity['user_name']) ?></td>
-                            <td><span class="badge bg-secondary"><?= e($activity['type_name']) ?></span></td>
-                            <td class="text-center"><?= $activity['quantity'] ?></td>
+                            <td><span class="badge bg-secondary"><?= e($activity['activity_type_name']) ?></span></td>
+                            <td class="text-center"><?= (int)$activity['quantity'] ?></td>
                             <td>
                                 <span class="text-truncate d-inline-block" style="max-width: 200px;" title="<?= e($activity['title']) ?>">
                                     <?= e($activity['title']) ?>
                                 </span>
                             </td>
                             <td class="text-center">
-                                <span class="fw-bold text-primary"><?= $activity['score'] ?></span>
+                                <span class="fw-bold text-primary"><?= (int)$activity['score'] ?></span>
                             </td>
                             <td class="text-center">
-                                <?php if ($activity['is_mission']): ?>
+                                <?php if (!empty($activity['mission'])): ?>
                                     <span class="badge bg-warning text-dark"><i class="bi bi-flag me-1"></i>بله</span>
                                 <?php else: ?>
                                     <span class="text-muted">—</span>

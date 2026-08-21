@@ -143,12 +143,14 @@ class Admin_ImportController extends BaseController
                 }
 
                 $date = trim($row['Date'] ?? '');
-                if ($date !== '' && !preg_match('/^\d{4}-\d{2}-\d{2}$/', $date)) {
-                    $errors[] = "خطای ردیف {$lineNum}: تاریخ نامعتبر ({$date})";
-                    $errorCount++;
-                    continue;
-                }
-                if ($date === '') {
+                if ($date !== '') {
+                    $date = $this->normalizeDate($date);
+                    if ($date === null) {
+                        $errors[] = "خطای ردیف {$lineNum}: تاریخ نامعتبر";
+                        $errorCount++;
+                        continue;
+                    }
+                } else {
                     $date = date('Y-m-d');
                 }
 
@@ -270,7 +272,12 @@ class Admin_ImportController extends BaseController
 
     private function generateUsername(string $name): string
     {
-        $base = preg_replace('/[^a-zA-Z0-9]/', '', transliterator_transliterate('Any-Latin; Latin-ASCII;', $name));
+        $base = '';
+        if (function_exists('transliterator_transliterate')) {
+            $base = preg_replace('/[^a-zA-Z0-9]/', '', transliterator_transliterate('Any-Latin; Latin-ASCII;', $name));
+        } else {
+            $base = preg_replace('/[^a-zA-Z0-9]/', '', $name);
+        }
         $base = strtolower($base);
         if ($base === '') {
             $base = 'user_' . bin2hex(random_bytes(4));
@@ -284,5 +291,21 @@ class Admin_ImportController extends BaseController
         }
 
         return $username;
+    }
+
+    private function normalizeDate(string $raw): ?string
+    {
+        $raw = strtr(trim($raw), [
+            '۰'=>'0','۱'=>'1','۲'=>'2','۳'=>'3','۴'=>'4','۵'=>'5','۶'=>'6','۷'=>'7','۸'=>'8','۹'=>'9',
+            '٠'=>'0','١'=>'1','٢'=>'2','٣'=>'3','٤'=>'4','٥'=>'5','٦'=>'6','٧'=>'7','٨'=>'8','٩'=>'9',
+        ]);
+        if (preg_match('/^(\d{4})-(\d{1,2})-(\d{1,2})$/', $raw, $m)) {
+            return sprintf('%04d-%02d-%02d', (int)$m[1], (int)$m[2], (int)$m[3]);
+        }
+        if (preg_match('/^(\d{4})\/(\d{1,2})\/(\d{1,2})$/', $raw, $m)) {
+            [$gy, $gm, $gd] = Helper::jalaliToGregorian((int)$m[1], (int)$m[2], (int)$m[3]);
+            return sprintf('%04d-%02d-%02d', $gy, $gm, $gd);
+        }
+        return null;
     }
 }
