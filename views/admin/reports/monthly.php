@@ -101,7 +101,7 @@
                 <?php foreach ($ranking as $index => $row): ?>
                     <?php
                     $targetScore = $row['target_score'] ?? 0;
-                    $earnedScore = $row['earned_score'] ?? 0;
+                    $earnedScore = $row['total_score'] ?? 0;
                     $pct = $targetScore > 0 ? min(100, round(($earnedScore / $targetScore) * 100)) : 0;
                     ?>
                     <tr>
@@ -116,15 +116,15 @@
                                 <?= $index + 1 ?>
                             <?php endif; ?>
                         </td>
-                        <td class="fw-semibold"><?= e($row['name']) ?></td>
+                        <td class="fw-semibold"><?= e($row['user_name']) ?></td>
                         <td><?= e($row['position'] ?? '-') ?></td>
-                        <td class="text-center"><?= $row['news'] ?? 0 ?></td>
-                        <td class="text-center"><?= $row['exclusive'] ?? 0 ?></td>
-                        <td class="text-center"><?= $row['interview'] ?? 0 ?></td>
-                        <td class="text-center"><?= $row['special_report'] ?? 0 ?></td>
-                        <td class="text-center"><?= $row['photo'] ?? 0 ?></td>
-                        <td class="text-center"><?= $row['gallery'] ?? 0 ?></td>
-                        <td class="text-center"><?= $row['video'] ?? 0 ?></td>
+                        <td class="text-center"><?= $row['news_normal'] ?? 0 ?></td>
+                        <td class="text-center"><?= $row['news_exclusive'] ?? 0 ?></td>
+                        <td class="text-center"><?= $row['interview_count'] ?? 0 ?></td>
+                        <td class="text-center"><?= $row['special_report_count'] ?? 0 ?></td>
+                        <td class="text-center"><?= $row['photo_news'] ?? 0 ?></td>
+                        <td class="text-center"><?= $row['gallery_count'] ?? 0 ?></td>
+                        <td class="text-center"><?= $row['exclusive_video_count'] ?? 0 ?></td>
                         <td class="text-center"><?= number_format($targetScore) ?></td>
                         <td class="text-center fw-bold text-primary"><?= number_format($earnedScore) ?></td>
                         <td style="min-width: 130px;">

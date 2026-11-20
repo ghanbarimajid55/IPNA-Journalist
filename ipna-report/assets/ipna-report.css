@@ -1,0 +1,130 @@
+.ipna-report-wrap h1 { margin-bottom: 12px; }
+.ipna-report-wrap .nav-tab-wrapper { margin-bottom: 16px; }
+
+.ipna-cards { display: flex; flex-wrap: wrap; gap: 14px; margin-bottom: 22px; }
+.ipna-card {
+  flex: 1 1 180px;
+  background: #fff;
+  border: 1px solid #e2e4e7;
+  border-radius: 8px;
+  padding: 16px 18px;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.04);
+  display: flex;
+  flex-direction: column;
+}
+.ipna-card-label { color: #646970; font-size: 13px; }
+.ipna-card-value { font-size: 26px; font-weight: 700; color: #1d2327; margin-top: 4px; }
+
+.ipna-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 16px; margin-bottom: 16px; }
+@media (max-width: 960px) { .ipna-grid { grid-template-columns: 1fr; } }
+
+.ipna-chart-card {
+  background: #fff;
+  border: 1px solid #e2e4e7;
+  border-radius: 8px;
+  padding: 16px 18px;
+  margin-bottom: 16px;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.04);
+}
+.ipna-chart-card h2 { margin-top: 0; font-size: 15px; }
+.ipna-chart-card canvas { height: 260px !important; }
+
+.ipna-table { margin-top: 8px; }
+.ipna-table th { font-weight: 600; }
+.ipna-table td { vertical-align: middle; }
+
+.ipna-range { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin: 0 0 16px; }
+.ipna-range label { display: flex; align-items: center; gap: 6px; }
+.ipna-range input[type="date"], .ipna-range input[type="number"] { padding: 3px 8px; }
+
+.ipna-catdaily th { text-align: center; }
+.ipna-catdaily td { text-align: center; }
+.ipna-catdaily td:first-child { text-align: right; }
+.ipna-catdaily .ipna-user-row td { background: #eaf1ff; font-weight: 600; }
+
+.ipna-today {
+  background: #eaf1ff;
+  border: 1px solid #cfe0ff;
+  border-radius: 6px;
+  padding: 10px 14px;
+  margin-bottom: 12px;
+  font-size: 13px;
+}
+.ipna-today-user { margin: 3px 0; }
+
+.ipna-acc-list { margin-top: 6px; }
+.ipna-acc {
+  border: 1px solid #e2e4e7;
+  border-radius: 6px;
+  margin-bottom: 6px;
+  background: #fff;
+}
+.ipna-acc summary {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  cursor: pointer;
+  list-style: none;
+  font-weight: 600;
+  color: #1d2327;
+}
+.ipna-acc summary::-webkit-details-marker { display: none; }
+.ipna-plus::before {
+  content: '+';
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  line-height: 18px;
+  text-align: center;
+  background: #1a73e8;
+  color: #fff;
+  border-radius: 4px;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+.ipna-acc[open] .ipna-plus::before { content: '−'; }
+.ipna-acc-name, .ipna-acc-count { margin-left: auto; color: #646970; font-weight: 400; font-size: 12px; }
+.ipna-acc-name { margin-left: 0; }
+.ipna-acc-body { padding: 0 12px 12px; }
+.ipna-acc-body table { margin-top: 8px; }
+
+.ipna-catdaily {
+  border-collapse: separate;
+  border-spacing: 0;
+  border: 1px solid #e2e4e7;
+  border-radius: 6px;
+  overflow: hidden;
+  width: 100%;
+}
+.ipna-catdaily th {
+  background: #1a73e8;
+  color: #fff;
+  text-align: center;
+  font-weight: 600;
+  padding: 8px 6px;
+}
+.ipna-catdaily td {
+  text-align: center;
+  padding: 6px;
+  border-top: 1px solid #f0f1f3;
+}
+.ipna-catdaily td:first-child { text-align: right; }
+.ipna-catdaily tbody tr:nth-child(odd) { background: #fafbfc; }
+.ipna-catdaily tbody tr:hover { background: #f0f6ff; }
+.ipna-catdaily .ipna-col-today { background: #fff6d8 !important; font-weight: 600; }
+
+.ipna-cat-badge {
+  background: #eef2ff;
+  color: #1a73e8;
+  padding: 2px 10px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 600;
+}
+.ipna-cat-total { color: #1a73e8; font-size: 14px; }
+.ipna-today-h { background: rgba(26,115,232,0.12); padding: 2px 6px; border-radius: 4px; color: #1a73e8; }
+
+.ipna-user-name { font-size: 15px; }
+
+.ipna-chart-card canvas { height: 300px !important; }

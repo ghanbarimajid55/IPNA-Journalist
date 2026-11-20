@@ -281,7 +281,7 @@ class Activity {
                 AND YEAR(a.activity_date) = :year
                 AND MONTH(a.activity_date) = :month
                 AND a.status = 'active'
-            GROUP BY a.activity_date, at.id
+            GROUP BY a.activity_date, at.id, at.name, at.category
             ORDER BY a.activity_date
         ");
         $stmt->execute([':user_id' => $userId, ':year' => $year, ':month' => $month]);
@@ -300,7 +300,7 @@ class Activity {
             FROM activities a
             LEFT JOIN activity_types at ON a.activity_type = at.id
             WHERE a.activity_date = :date AND a.status = 'active'
-            GROUP BY a.activity_type
+            GROUP BY a.activity_type, at.name, at.code, at.category
             ORDER BY total_score DESC
         ");
         $stmt->execute([':date' => $date]);
@@ -319,7 +319,7 @@ class Activity {
             FROM activities a
             LEFT JOIN activity_types at ON a.activity_type = at.id
             WHERE a.activity_date BETWEEN :start_date AND :end_date AND a.status = 'active'
-            GROUP BY a.activity_date, a.activity_type
+            GROUP BY a.activity_date, a.activity_type, at.name, at.category
             ORDER BY a.activity_date, total_score DESC
         ");
         $stmt->execute([':start_date' => $startDate, ':end_date' => $endDate]);
@@ -338,7 +338,7 @@ class Activity {
             FROM activities a
             LEFT JOIN activity_types at ON a.activity_type = at.id
             WHERE YEAR(a.activity_date) = :year AND MONTH(a.activity_date) = :month AND a.status = 'active'
-            GROUP BY a.activity_type
+            GROUP BY a.activity_type, at.name, at.code, at.category
             ORDER BY total_score DESC
         ");
         $stmt->execute([':year' => $year, ':month' => $month]);
@@ -366,7 +366,7 @@ class Activity {
                 AND a.status = 'active'
             LEFT JOIN activity_types at ON a.activity_type = at.id
             WHERE u.status = 'active' AND u.role IN ('reporter', 'photographer')
-            GROUP BY u.id
+            GROUP BY u.id, u.name, u.role, u.position, u.avatar
             ORDER BY total_score DESC, 
                 SUM(CASE WHEN at.code = 'exclusive_news' THEN a.quantity ELSE 0 END) DESC,
                 SUM(CASE WHEN at.code = 'special_report' THEN a.quantity ELSE 0 END) DESC,

@@ -42,7 +42,7 @@ class Report {
             $params[':user_id'] = $filters['user_id'];
         }
 
-        $sql .= " GROUP BY u.id ORDER BY total_score DESC";
+        $sql .= " GROUP BY u.id, u.name, u.role, u.position ORDER BY total_score DESC";
 
         $stmt = $this->db->prepare($sql);
         $stmt->execute($params);
@@ -66,7 +66,7 @@ class Report {
             FROM activities a
             LEFT JOIN activity_types at ON a.activity_type = at.id
             WHERE a.activity_date = :date AND a.status = 'active'
-            GROUP BY a.activity_type
+            GROUP BY a.activity_type, at.name, at.code, at.category
             ORDER BY total_score DESC
         ");
         $stmt3->execute([':date' => $date]);
@@ -121,7 +121,7 @@ class Report {
             $params[':user_id'] = $filters['user_id'];
         }
 
-        $sql .= " GROUP BY u.id ORDER BY total_score DESC";
+        $sql .= " GROUP BY u.id, u.name, u.role, u.position ORDER BY total_score DESC";
 
         $stmt = $this->db->prepare($sql);
         $stmt->execute($params);
@@ -183,7 +183,7 @@ class Report {
             LEFT JOIN activity_types at ON a.activity_type = at.id
             LEFT JOIN monthly_targets mt ON u.id = mt.user_id AND mt.year = :year2 AND mt.month = :month2
             WHERE u.status = 'active' AND u.role IN ('reporter', 'photographer')
-            GROUP BY u.id
+            GROUP BY u.id, u.name, u.role, u.position, u.avatar, mt.score_target, mt.news_target, mt.photo_target, mt.video_target
             ORDER BY total_score DESC
         ";
         $stmt = $this->db->prepare($sql);
@@ -201,7 +201,7 @@ class Report {
             FROM activities a
             LEFT JOIN activity_types at ON a.activity_type = at.id
             WHERE YEAR(a.activity_date) = :year AND MONTH(a.activity_date) = :month AND a.status = 'active'
-            GROUP BY a.activity_type
+            GROUP BY a.activity_type, at.name, at.code, at.category
             ORDER BY total_score DESC
         ");
         $stmt3->execute([':year' => $year, ':month' => $month]);
@@ -254,7 +254,7 @@ class Report {
             LEFT JOIN activity_types at ON a.activity_type = at.id
             LEFT JOIN monthly_targets mt ON u.id = mt.user_id AND mt.year = :year2 AND mt.month = :month2
             WHERE u.status = 'active' AND u.role IN ('reporter', 'photographer')
-            GROUP BY u.id
+            GROUP BY u.id, u.name, u.role, u.position, u.avatar, mt.score_target
             ORDER BY total_score DESC, news_exclusive DESC, special_report_count DESC, interview_count DESC, total_quantity DESC
         ");
         $stmt->execute([
@@ -293,7 +293,7 @@ class Report {
                 AND a.status = 'active'
             LEFT JOIN activity_types at ON a.activity_type = at.id
             WHERE u.status = 'active' AND u.role IN ('reporter', 'photographer')
-            GROUP BY u.id
+            GROUP BY u.id, u.name, u.role, u.position
             ORDER BY total_score DESC
         ");
         $stmt->execute([':year' => $year, ':month' => $month]);

@@ -106,8 +106,7 @@ class Admin_ActivityController extends BaseController {
                 $this->json(['success' => false, 'errors' => $errors], 422);
                 return;
             }
-            Helper::flash('error', 'لطفاً خطاهای فرم را بررسی کنید');
-            $this->redirect('/admin/activities/create');
+            $this->redirectBackWithInput($input);
             return;
         }
 
@@ -118,7 +117,7 @@ class Admin_ActivityController extends BaseController {
                 return;
             }
             Helper::flash('error', 'تعداد باید بزرگتر از صفر باشد');
-            $this->redirect('/admin/activities/create');
+            $this->redirectBackWithInput($input);
             return;
         }
 
@@ -141,6 +140,7 @@ class Admin_ActivityController extends BaseController {
             return;
         }
 
+        $this->clearOldInput();
         Helper::flash('success', 'فعالیت با موفقیت ثبت شد');
         $this->redirect('/admin/activities');
     }
@@ -158,6 +158,11 @@ class Admin_ActivityController extends BaseController {
             $this->redirect('/admin/activities');
             return;
         }
+
+        // Normalise field names used by the edit view and old() helper.
+        $activity['date'] = Helper::jalaliDate($activity['activity_date']);
+        $activity['activity_type_id'] = $activity['activity_type'];
+        $activity['is_mission'] = $activity['mission'];
 
         $data = [
             'activity' => $activity,
@@ -206,7 +211,7 @@ class Admin_ActivityController extends BaseController {
                 return;
             }
             Helper::flash('error', 'تعداد باید بزرگتر از صفر باشد');
-            $this->redirect("/admin/activities/{$id}/edit");
+            $this->redirectBackWithInput($input);
             return;
         }
 
@@ -220,6 +225,7 @@ class Admin_ActivityController extends BaseController {
             return;
         }
 
+        $this->clearOldInput();
         Helper::flash('success', 'فعالیت با موفقیت به‌روزرسانی شد');
         $this->redirect('/admin/activities');
     }

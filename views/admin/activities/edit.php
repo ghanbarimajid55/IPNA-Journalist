@@ -17,7 +17,7 @@
                     <select class="form-select" id="user_id" name="user_id" required>
                         <option value="">انتخاب کاربر...</option>
                         <?php foreach ($users as $user): ?>
-                            <option value="<?= $user['id'] ?>" <?= $activity['user_id'] == $user['id'] ? 'selected' : '' ?>>
+                            <option value="<?= $user['id'] ?>" <?= old('user_id', $activity['user_id']) == $user['id'] ? 'selected' : '' ?>>
                                 <?= e($user['name']) ?> (<?= e($user['position'] ?? $user['role']) ?>)
                             </option>
                         <?php endforeach; ?>
@@ -28,7 +28,7 @@
                 <div class="col-md-4">
                     <label for="date" class="form-label">تاریخ <span class="text-danger">*</span></label>
                     <input type="text" class="form-control persian-date-input" id="date" name="date" required
-                           value="<?= e($activity['date']) ?>" placeholder="۱۴۰۳/۰۵/۱۵" dir="ltr">
+                           value="<?= e(old('date', $activity['date'])) ?>" placeholder="۱۴۰۳/۰۵/۱۵" dir="ltr">
                     <div class="invalid-feedback">تاریخ الزامی است.</div>
                 </div>
 
@@ -39,7 +39,7 @@
                         <?php foreach ($activityTypes as $type): ?>
                             <option value="<?= $type['id'] ?>"
                                 data-score="<?= $type['score'] ?>"
-                                <?= $activity['activity_type_id'] == $type['id'] ? 'selected' : '' ?>>
+                                <?= old('activity_type_id', $activity['activity_type_id']) == $type['id'] ? 'selected' : '' ?>>
                                 <?= e($type['name']) ?> (<?= $type['score'] ?> امتیاز)
                             </option>
                         <?php endforeach; ?>
@@ -50,34 +50,34 @@
                 <div class="col-md-3">
                     <label for="quantity" class="form-label">تعداد <span class="text-danger">*</span></label>
                     <input type="number" class="form-control" id="quantity" name="quantity" required
-                           value="<?= $activity['quantity'] ?>" min="1">
+                           value="<?= e(old('quantity', $activity['quantity'])) ?>" min="1">
                     <div class="invalid-feedback">تعداد الزامی است.</div>
                 </div>
 
                 <div class="col-md-5">
                     <label for="title" class="form-label">عنوان <span class="text-danger">*</span></label>
                     <input type="text" class="form-control" id="title" name="title" required
-                           value="<?= e($activity['title']) ?>">
+                           value="<?= e(old('title', $activity['title'])) ?>">
                     <div class="invalid-feedback">عنوان الزامی است.</div>
                 </div>
 
                 <div class="col-md-4">
                     <label for="link" class="form-label">لینک</label>
                     <input type="url" class="form-control" id="link" name="link"
-                           value="<?= e($activity['link'] ?? '') ?>" placeholder="https://..." dir="ltr">
+                           value="<?= e(old('link', $activity['link'] ?? '')) ?>" placeholder="https://..." dir="ltr">
                 </div>
 
                 <div class="col-md-12">
                     <div class="form-check form-switch">
                         <input class="form-check-input" type="checkbox" id="is_mission" name="is_mission" value="1"
-                               <?= $activity['is_mission'] ? 'checked' : '' ?>>
+                               <?= old('is_mission', $activity['is_mission']) ? 'checked' : '' ?>>
                         <label class="form-check-label" for="is_mission">مأموریت ویژه</label>
                     </div>
                 </div>
 
                 <div class="col-12">
                     <label for="description" class="form-label">توضیحات</label>
-                    <textarea class="form-control" id="description" name="description" rows="3"><?= e($activity['description'] ?? '') ?></textarea>
+                    <textarea class="form-control" id="description" name="description" rows="3"><?= e(old('description', $activity['description'] ?? '')) ?></textarea>
                 </div>
             </div>
 

@@ -68,8 +68,7 @@ class Admin_UserController extends BaseController {
                 $this->json(['success' => false, 'errors' => $errors], 422);
                 return;
             }
-            Helper::flash('error', 'لطفاً خطاهای فرم را بررسی کنید');
-            $this->redirect('/admin/users/create');
+            $this->redirectBackWithInput($input);
             return;
         }
 
@@ -82,7 +81,7 @@ class Admin_UserController extends BaseController {
                 return;
             }
             Helper::flash('error', 'نام کاربری تکراری است');
-            $this->redirect('/admin/users/create');
+            $this->redirectBackWithInput($input);
             return;
         }
 
@@ -95,7 +94,7 @@ class Admin_UserController extends BaseController {
                     return;
                 }
                 Helper::flash('error', 'ایمیل تکراری است');
-                $this->redirect('/admin/users/create');
+                $this->redirectBackWithInput($input);
                 return;
             }
         }
@@ -128,6 +127,7 @@ class Admin_UserController extends BaseController {
             return;
         }
 
+        $this->clearOldInput();
         Helper::flash('success', 'کاربر با موفقیت ایجاد شد');
         $this->redirect('/admin/users');
     }
@@ -206,7 +206,7 @@ class Admin_UserController extends BaseController {
                     return;
                 }
                 Helper::flash('error', 'ایمیل تکراری است');
-                $this->redirect("/admin/users/{$id}/edit");
+                $this->redirectBackWithInput($input);
                 return;
             }
         }
@@ -221,6 +221,7 @@ class Admin_UserController extends BaseController {
             return;
         }
 
+        $this->clearOldInput();
         Helper::flash('success', 'کاربر با موفقیت به‌روزرسانی شد');
         $this->redirect('/admin/users');
     }

@@ -24,17 +24,23 @@ if (is_file($configFile)) {
     require_once $configFile;
 }
 
-// Check if database is configured (not placeholder values)
+// Check installation state.
+// The installer creates /.installed after a successful installation.
+// Do not use "non-empty database password" as an installation criterion,
+// because XAMPP/MySQL commonly uses root with an empty password.
 $isInstalled = false;
+
+$installedMarker = BASE_PATH . '/.installed';
 $dbConfigPath = BASE_PATH . '/config/database.php';
-if (file_exists($dbConfigPath)) {
+
+if (file_exists($installedMarker) && file_exists($dbConfigPath)) {
     $dbConfig = require $dbConfigPath;
+
     if (
         is_array($dbConfig)
         && !empty($dbConfig['host'])
         && !empty($dbConfig['dbname'])
         && !empty($dbConfig['username'])
-        && ($dbConfig['host'] !== 'localhost' || $dbConfig['dbname'] !== 'ipna_pms' || !empty($dbConfig['password']))
     ) {
         $isInstalled = true;
     }

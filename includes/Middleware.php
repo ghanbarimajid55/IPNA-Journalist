@@ -63,21 +63,4 @@ class Middleware
         }
         return true;
     }
-
-    public static function csrfCheck(): bool
-    {
-        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-            return true;
-        }
-
-        $token = $_POST['csrf_token'] ?? $_SERVER['HTTP_X_CSRF_TOKEN'] ?? null;
-
-        if (!Auth::verifyCsrfToken($token)) {
-            http_response_code(403);
-            echo json_encode(['success' => false, 'message' => 'توکن CSRF نامعتبر است.']);
-            exit;
-        }
-
-        return true;
-    }
 }

@@ -80,8 +80,7 @@ class Admin_TeamController extends BaseController {
                 $this->json(['success' => false, 'errors' => $errors], 422);
                 return;
             }
-            Helper::flash('error', 'لطفاً خطاهای فرم را بررسی کنید');
-            $this->redirect('/admin/team/create');
+            $this->redirectBackWithInput($input);
             return;
         }
 
@@ -139,6 +138,7 @@ class Admin_TeamController extends BaseController {
             return;
         }
 
+        $this->clearOldInput();
         Helper::flash('success', 'عضو تیم با موفقیت ایجاد شد');
         $this->redirect('/admin/team');
     }
@@ -198,7 +198,7 @@ class Admin_TeamController extends BaseController {
                     return;
                 }
                 Helper::flash('error', 'ایمیل تکراری است');
-                $this->redirect("/admin/team/{$id}/edit");
+                $this->redirectBackWithInput($input);
                 return;
             }
         }
@@ -213,6 +213,7 @@ class Admin_TeamController extends BaseController {
             return;
         }
 
+        $this->clearOldInput();
         Helper::flash('success', 'عضو تیم با موفقیت به‌روزرسانی شد');
         $this->redirect('/admin/team');
     }

@@ -14,7 +14,7 @@
                 <div class="mb-3">
                     <label for="date" class="form-label fw-bold">تاریخ</label>
                     <input type="text" class="form-control form-control-lg" id="date" name="date"
-                           value="<?= htmlspecialchars($activity['date']) ?>" required
+                           value="<?= e(old('date', $activity['date'])) ?>" required
                            placeholder="مثلاً ۱۴۰۵/۰۶/۰۱" style="font-size:1.1rem;">
                 </div>
 
@@ -32,13 +32,13 @@
                                            name="activity_type_id" id="type_<?= $type['id'] ?>"
                                            value="<?= $type['id'] ?>"
                                            data-score="<?= $type['score_per_unit'] ?? 0 ?>"
-                                           data-name="<?= htmlspecialchars($type['name']) ?>"
-                                           <?= ($activity['activity_type_id'] == $type['id']) ? 'checked' : '' ?>
+                                           data-name="<?= e($type['name']) ?>"
+                                           <?= old('activity_type_id', $activity['activity_type_id']) == $type['id'] ? 'checked' : '' ?>
                                            required>
                                     <label class="form-check-label w-100 d-block p-3 border rounded-3 text-center activity-type-label <?= $isPhotoVideo ? 'border-success border-2' : '' ?>"
                                            for="type_<?= $type['id'] ?>"
                                            style="cursor:pointer;min-height:60px;display:flex;flex-direction:column;justify-content:center;transition:all 0.2s;">
-                                        <span class="fw-bold" style="font-size:1.05rem;"><?= htmlspecialchars($type['name']) ?></span>
+                                        <span class="fw-bold" style="font-size:1.05rem;"><?= e($type['name']) ?></span>
                                         <small class="text-muted"><?= $type['score_per_unit'] ?? 0 ?> امتیاز/واحد</small>
                                     </label>
                                 </div>
@@ -54,7 +54,7 @@
                         <div class="input-group">
                             <button class="btn btn-outline-secondary" type="button" id="qtyMinus" style="min-width:48px;min-height:48px;font-size:1.3rem;">−</button>
                             <input type="number" class="form-control form-control-lg text-center" id="quantity" name="quantity"
-                                   value="<?= $activity['quantity'] ?>" min="1" max="999" required style="font-size:1.3rem;font-weight:bold;">
+                                   value="<?= e(old('quantity', $activity['quantity'])) ?>" min="1" max="999" required style="font-size:1.3rem;font-weight:bold;">
                             <button class="btn btn-outline-secondary" type="button" id="qtyPlus" style="min-width:48px;min-height:48px;font-size:1.3rem;">+</button>
                         </div>
                     </div>
@@ -70,7 +70,7 @@
                 <div class="mb-3">
                     <label for="title" class="form-label fw-bold">عنوان</label>
                     <input type="text" class="form-control form-control-lg" id="title" name="title"
-                           value="<?= htmlspecialchars($activity['title']) ?>"
+                           value="<?= e(old('title', $activity['title'])) ?>"
                            required minlength="3" maxlength="255"
                            placeholder="حداقل ۳ کاراکتر" style="font-size:1.05rem;">
                     <div class="invalid-feedback">عنوان حداقل باید ۳ کاراکتر باشد</div>
@@ -79,7 +79,7 @@
                 <div class="mb-3">
                     <label for="link" class="form-label fw-bold">لینک <small class="text-muted">(اختیاری)</small></label>
                     <input type="url" class="form-control form-control-lg" id="link" name="link"
-                           value="<?= htmlspecialchars($activity['link'] ?? '') ?>"
+                           value="<?= e(old('link', $activity['link'] ?? '')) ?>"
                            placeholder="https://..." dir="ltr" style="font-size:1rem;">
                 </div>
 
@@ -91,7 +91,7 @@
                         </div>
                         <div class="form-check form-switch mb-0">
                             <input class="form-check-input" type="checkbox" id="is_mission" name="is_mission" value="1"
-                                   <?= !empty($activity['is_mission']) ? 'checked' : '' ?>
+                                   <?= old('is_mission', $activity['is_mission']) ? 'checked' : '' ?>
                                    style="width:3.5rem;height:1.8rem;cursor:pointer;">
                         </div>
                     </div>
@@ -100,7 +100,7 @@
                 <div class="mb-3">
                     <label for="description" class="form-label fw-bold">توضیحات <small class="text-muted">(اختیاری)</small></label>
                     <textarea class="form-control" id="description" name="description" rows="3"
-                              placeholder="توضیحات تکمیلی..." style="font-size:1rem;"><?= htmlspecialchars($activity['description'] ?? '') ?></textarea>
+                              placeholder="توضیحات تکمیلی..." style="font-size:1rem;"><?= e(old('description', $activity['description'] ?? '')) ?></textarea>
                 </div>
             </div>
         </div>

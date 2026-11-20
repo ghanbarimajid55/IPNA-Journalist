@@ -74,4 +74,33 @@ abstract class BaseController {
         return !empty($_SERVER['HTTP_X_REQUESTED_WITH'])
             && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest';
     }
+
+    /**
+     * Preserve submitted form input in the session so the view can repopulate
+     * fields with old() after a validation failure.
+     *
+     * Password fields are intentionally never stored.
+     */
+    protected function keepInput(array $input): void {
+        $sensitive = ['password', 'password_confirmation', 'old_password', 'confirm_password', 'pass', 'pass2'];
+        $_SESSION['old'] = array_diff_key($input, array_flip($sensitive));
+    }
+
+    protected function clearOldInput(): void {
+        unset($_SESSION['old']);
+    }
+
+    /**
+     * Redirect back to the referring page, preserving submitted input.
+     * Falls back to the current request URI if no referer is present.
+     */
+    protected function redirectBackWithInput(array $input, string $message = 'لطفاً خطاهای فرم را بررسی کنید'): void {
+        $this->keepInput($input);
+        Helper::flash('error', $message);
+        $referer = $_SERVER['HTTP_REFERER'] ?? '';
+        if ($referer !== '' && str_starts_with($referer, 'http')) {
+            $this->redirect($referer);
+        }
+        $this->redirect($_SERVER['REQUEST_URI'] ?? '/');
+    }
 }

@@ -8,6 +8,20 @@
 // ── Base path (needed before init.php loads config/config.php)
 define('BASE_PATH', dirname(__DIR__));
 
+// Allow Apache SetEnv to provide BASE_URL before config.php exists,
+// which is needed when the app is installed in a subdirectory and the
+// installer redirect must use the correct path. Only infer it when the
+// generated config file is not present, because config.php defines BASE_URL
+// itself.
+if (!defined('BASE_URL') && !file_exists(BASE_PATH . '/config/config.php')) {
+    if (!empty($_SERVER['BASE_URL'])) {
+        define('BASE_URL', rtrim($_SERVER['BASE_URL'], '/'));
+    } elseif (!empty($_SERVER['SCRIPT_NAME']) && str_ends_with($_SERVER['SCRIPT_NAME'], '/public/index.php')) {
+        $base = substr($_SERVER['SCRIPT_NAME'], 0, -strlen('/public/index.php'));
+        define('BASE_URL', $base !== '' ? $base : '');
+    }
+}
+
 // ── Bootstrap ─────────────────────────────────────────────────
 require_once BASE_PATH . '/includes/init.php';
 
@@ -90,7 +104,7 @@ function verifyCsrf(): void
 // ── Auth middleware check ─────────────────────────────────────
 function requireAuth(): void
 {
-    if (!isset($_SESSION['user_id'])) {
+    if (!Auth::check()) {
         header('Location: ' . BASE_URL . '/login');
         exit;
     }
@@ -99,8 +113,7 @@ function requireAuth(): void
 function requireAdmin(): void
 {
     requireAuth();
-    $user = $_SESSION['pms_user'] ?? null;
-    if (($user['role'] ?? '') !== 'admin') {
+    if (Auth::role() !== 'admin') {
         http_response_code(403);
         echo '<h1>403 — Forbidden</h1>';
         exit;

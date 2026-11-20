@@ -74,7 +74,11 @@ abstract class Role_ActivityControllerBase extends BaseController
         ]);
 
         if (!empty($errors)) {
-            $this->json(['success' => false, 'errors' => $errors], 422);
+            if ($this->isAjax()) {
+                $this->json(['success' => false, 'errors' => $errors], 422);
+                return;
+            }
+            $this->redirectBackWithInput($data);
             return;
         }
 
@@ -116,6 +120,12 @@ abstract class Role_ActivityControllerBase extends BaseController
             'score' => $score,
         ]);
 
+        if (!$this->isAjax()) {
+            $this->clearOldInput();
+            Helper::flash('success', 'فعالیت با موفقیت ثبت شد');
+            $this->redirect($this->basePath());
+        }
+
         $this->json([
             'success' => true,
             'message' => 'فعالیت با موفقیت ثبت شد',
@@ -146,6 +156,11 @@ abstract class Role_ActivityControllerBase extends BaseController
             $this->redirect($this->basePath());
             return;
         }
+
+        // Normalise field names used by the edit views and old() helper.
+        $activity['date'] = Helper::jalaliDate($activity['activity_date']);
+        $activity['activity_type_id'] = $activity['activity_type'];
+        $activity['is_mission'] = $activity['mission'];
 
         $allTypes = $this->activityTypeModel->findAll();
 
@@ -183,7 +198,8 @@ abstract class Role_ActivityControllerBase extends BaseController
             $updateData['quantity'] = max(1, (int)$data['quantity']);
         }
         if (isset($data['activity_type_id'])) {
-            $updateData['activity_type_id'] = (int)$data['activity_type_id'];
+            // The Activity model expects the foreign-key column name "activity_type".
+            $updateData['activity_type'] = (int)$data['activity_type_id'];
         }
         if (isset($data['title'])) {
             $updateData['title'] = $data['title'];
@@ -198,18 +214,22 @@ abstract class Role_ActivityControllerBase extends BaseController
             $updateData['description'] = $data['description'] !== '' ? $data['description'] : null;
         }
 
-        $activityTypeId = $updateData['activity_type_id'] ?? (int)$activity['activity_type'];
-        $quantity = $updateData['quantity'] ?? (int)$activity['quantity'];
-        $updateData['score'] = $this->activityModel->calculateScore($activityTypeId, $quantity);
-
+        // Activity::update() recomputes the score automatically when quantity
+        // or activity_type is present, so no manual score calculation is needed.
         $this->activityModel->update($id, $updateData);
 
         Helper::auditLog('update', 'activity', $id, null, $updateData);
 
+        if (!$this->isAjax()) {
+            $this->clearOldInput();
+            Helper::flash('success', 'فعالیت با موفقیت به‌روزرسانی شد');
+            $this->redirect($this->basePath());
+        }
+
         $this->json([
             'success' => true,
             'message' => 'فعالیت با موفقیت به‌روزرسانی شد',
-            'score' => $updateData['score'],
+            'score' => $updateData['score'] ?? null,
         ]);
     }
 

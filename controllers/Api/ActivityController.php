@@ -28,8 +28,9 @@ class Api_ActivityController extends BaseController
             $filters['user_id'] = (int)$_GET['user_id'];
         }
 
+        // The Activity model expects the database column name "activity_type".
         if (!empty($_GET['activity_type_id'])) {
-            $filters['activity_type_id'] = (int)$_GET['activity_type_id'];
+            $filters['activity_type'] = (int)$_GET['activity_type_id'];
         }
         if (!empty($_GET['date_from'])) {
             $filters['date_from'] = $_GET['date_from'];

@@ -15,8 +15,8 @@
                 <select name="user_id" class="form-select">
                     <option value="">همه</option>
                     <?php foreach ($report['users'] ?? [] as $u): ?>
-                        <option value="<?= $u['id'] ?>" <?= ($_GET['user_id'] ?? '') == $u['id'] ? 'selected' : '' ?>>
-                            <?= e($u['name']) ?>
+                        <option value="<?= $u['user_id'] ?>" <?= ($_GET['user_id'] ?? '') == $u['user_id'] ? 'selected' : '' ?>>
+                            <?= e($u['user_name']) ?>
                         </option>
                     <?php endforeach; ?>
                 </select>

@@ -80,7 +80,7 @@
                 <?php foreach (($report['users'] ?? []) as $index => $u): ?>
                     <tr>
                         <td><?= $index + 1 ?></td>
-                        <td class="fw-semibold"><?= e($u['name']) ?></td>
+                        <td class="fw-semibold"><?= e($u['user_name']) ?></td>
                         <td><?= e($u['position'] ?? '-') ?></td>
                         <td class="text-center">
                             <span class="badge bg-info"><?= $u['activity_count'] ?></span>

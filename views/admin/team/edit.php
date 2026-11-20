@@ -15,21 +15,21 @@
                 <div class="col-md-6">
                     <label for="name" class="form-label">نام کامل <span class="text-danger">*</span></label>
                     <input type="text" class="form-control" id="name" name="name" required
-                           value="<?= e($member['name']) ?>">
+                           value="<?= e(old('name', $member['name'])) ?>">
                     <div class="invalid-feedback">نام الزامی است.</div>
                 </div>
 
                 <div class="col-md-6">
                     <label for="username" class="form-label">نام کاربری <span class="text-danger">*</span></label>
                     <input type="text" class="form-control" id="username" name="username" required
-                           value="<?= e($member['username']) ?>" pattern="[a-zA-Z0-9_]+" dir="ltr">
+                           value="<?= e(old('username', $member['username'])) ?>" pattern="[a-zA-Z0-9_]+" dir="ltr">
                     <div class="invalid-feedback">نام کاربری الزامی است.</div>
                 </div>
 
                 <div class="col-md-6">
                     <label for="email" class="form-label">ایمیل <span class="text-danger">*</span></label>
                     <input type="email" class="form-control" id="email" name="email" required
-                           value="<?= e($member['email']) ?>" dir="ltr">
+                           value="<?= e(old('email', $member['email'])) ?>" dir="ltr">
                     <div class="invalid-feedback">ایمیل معتبر وارد کنید.</div>
                 </div>
 
@@ -48,8 +48,8 @@
                 <div class="col-md-4">
                     <label for="role" class="form-label">نقش <span class="text-danger">*</span></label>
                     <select class="form-select" id="role" name="role" required>
-                        <option value="reporter" <?= $member['role'] === 'reporter' ? 'selected' : '' ?>>خبرنگار</option>
-                        <option value="photographer" <?= $member['role'] === 'photographer' ? 'selected' : '' ?>>عکاس</option>
+                        <option value="reporter" <?= old('role', $member['role']) === 'reporter' ? 'selected' : '' ?>>خبرنگار</option>
+                        <option value="photographer" <?= old('role', $member['role']) === 'photographer' ? 'selected' : '' ?>>عکاس</option>
                     </select>
                     <div class="invalid-feedback">انتخاب نقش الزامی است.</div>
                 </div>
@@ -57,15 +57,15 @@
                 <div class="col-md-4">
                     <label for="position" class="form-label">سمت <span class="text-danger">*</span></label>
                     <input type="text" class="form-control" id="position" name="position" required
-                           value="<?= e($member['position'] ?? '') ?>">
+                           value="<?= e(old('position', $member['position'] ?? '')) ?>">
                     <div class="invalid-feedback">سمت الزامی است.</div>
                 </div>
 
                 <div class="col-md-4">
                     <label for="status" class="form-label">وضعیت <span class="text-danger">*</span></label>
                     <select class="form-select" id="status" name="status" required>
-                        <option value="active" <?= $member['status'] === 'active' ? 'selected' : '' ?>>فعال</option>
-                        <option value="inactive" <?= $member['status'] === 'inactive' ? 'selected' : '' ?>>غیرفعال</option>
+                        <option value="active" <?= old('status', $member['status']) === 'active' ? 'selected' : '' ?>>فعال</option>
+                        <option value="inactive" <?= old('status', $member['status']) === 'inactive' ? 'selected' : '' ?>>غیرفعال</option>
                     </select>
                 </div>
             </div>

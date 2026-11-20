@@ -1,0 +1,20 @@
+# IPNA PMS — root rewrite rules for subdirectory deployments.
+# Place this file in the project root when the application lives in a
+# subdirectory such as http://localhost/ipna-pms/.
+# If the web server is pointed directly at the public/ directory, this
+# file is not used and public/.htaccess handles routing.
+
+# Optional: explicitly set BASE_URL for the installer redirect before
+# config.php is generated. If omitted, public/index.php will infer it
+# from SCRIPT_NAME.
+# SetEnv BASE_URL /ipna-pms
+
+RewriteEngine On
+
+# Serve installer files directly so /install/process.php works.
+RewriteRule ^install$ install/ [L,R=302]
+RewriteRule ^install/(.*)$ install/$1 [L]
+
+# Route everything else through public/.
+RewriteRule ^$ public/ [L]
+RewriteRule (.*) public/$1 [L]

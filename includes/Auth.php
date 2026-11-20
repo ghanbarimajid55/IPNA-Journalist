@@ -39,6 +39,7 @@ class Auth
             return false;
         }
 
+        $auth->clearLoginAttempts($ip);
         session_regenerate_id(true);
 
         unset($user['password']);
@@ -60,10 +61,13 @@ class Auth
 
     public static function logout(): void
     {
-        $auth = new self();
-        $user = $auth->user();
-        if ($user) {
-            Helper::auditLog('logout', 'user', $user['id']);
+        // Read the id straight from the session. user()/check() must never be
+        // called from here: check() invokes logout() on idle timeout, so
+        // routing this through check() would recurse until stack overflow.
+        $sessionUser = $_SESSION[self::SESSION_KEY] ?? null;
+        $userId = is_array($sessionUser) ? ($sessionUser['id'] ?? null) : null;
+        if ($userId !== null && $userId !== 0 && $userId !== '0') {
+            Helper::auditLog('logout', 'user', $userId);
         }
 
         $_SESSION = [];
@@ -191,6 +195,17 @@ class Auth
             'username'     => $username,
             'ip_address'   => $ip,
         ]);
+        // Bound table growth: discard attempts older than the rate-limit window.
+        $db->execute(
+            'DELETE FROM login_attempts WHERE attempted_at < DATE_SUB(NOW(), INTERVAL ? SECOND)',
+            [self::RATE_LIMIT_WINDOW]
+        );
+    }
+
+    public static function clearLoginAttempts(string $ip): void
+    {
+        $db = Database::getInstance();
+        $db->execute('DELETE FROM login_attempts WHERE ip_address = ?', [$ip]);
     }
 
     public static function generateCsrfToken(): string
